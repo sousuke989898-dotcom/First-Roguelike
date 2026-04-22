@@ -65,7 +65,7 @@ public class Unit : Entity
         UpdateAnimation();
     }
 
-    public virtual void UpdateAnimation()
+    protected virtual void UpdateAnimation()
     {
         if (ActionState == UnitActionState.Idle || ActionState == UnitActionState.Destroy) return;
         AnimTimer -= Time.deltaTime;
@@ -85,7 +85,14 @@ public class Unit : Entity
         }
     }
 
-    public void MoveAnimation(float progress)
+    protected void StartAnimation(float time, UnitActionState state)
+    {
+        TimeWhenTimerStarted = time;
+        AnimTimer = time;
+        ActionState = state;
+    }
+
+    protected void MoveAnimation(float progress)
     {
         if (AnimTimer <= 0f)
         {
@@ -101,7 +108,7 @@ public class Unit : Entity
         }
     }
 
-    public void AttackAnimation(float progress)
+    protected void AttackAnimation(float progress)
     {
         if (AnimTimer <= 0f)
         {
@@ -115,7 +122,7 @@ public class Unit : Entity
         }
     }
 
-    public void DieAnimation(float progress)
+    protected void DieAnimation(float progress)
     {
         Color c = spriteRenderer.color;
         if (AnimTimer <= 0f)
@@ -164,17 +171,9 @@ public class Unit : Entity
         return false;
     }
 
-    public bool InteractAbsPos(Vector2Int pos) //絶対座標で動作する
+    protected bool InteractAbsPos(Vector2Int pos) //絶対座標で動作する
     {
         return false;
-    }
-
-
-    public void StartAnimation(float time, UnitActionState state)
-    {
-        TimeWhenTimerStarted = time;
-        AnimTimer = time;
-        ActionState = state;
     }
 
 
@@ -183,7 +182,7 @@ public class Unit : Entity
     /// </summary>
     /// <param name="target">標的</param>
     /// <returns>与えたダメージ量</returns>
-    public int Attack(Unit target)
+    protected int Attack(Unit target)
     {
         return target.TakeDamage(AttackDamage);
     }
@@ -193,7 +192,7 @@ public class Unit : Entity
     /// </summary>
     /// <param name="pos">標的の座標</param>
     /// <returns>与えたダメージ量</returns>
-    public int Attack(Vector2Int pos)
+    protected int Attack(Vector2Int pos)
     {
         Unit target = MapManager.Instance.Data.GetUnit(pos);
         Debug.Log(target);
@@ -215,7 +214,7 @@ public class Unit : Entity
     /// 実体力を設定する
     /// </summary>
     /// <param name="amount">MaxHP > amount > 0</param>
-    public void SetHP(int amount)
+    protected void SetHP(int amount)
     {
         HP = amount;
         if (HP > MaxHP) HP = MaxHP;
@@ -260,7 +259,7 @@ public class Unit : Entity
     /// 体力最大値を設定する 実体力は変更しない
     /// </summary>
     /// <param name="amount">変更後</param>
-    public void SetMaxHP(int amount)
+    protected void SetMaxHP(int amount)
     {
         if(amount <= 0) return;
         MaxHP = amount;
