@@ -40,7 +40,7 @@ public static class MapGenerator
         {
             map = FillRect(map, section.roomRect, TileType.Floor); //部屋を床で埋める
 
-            foreach (var dir in DirectionExtensions.baseDirs)
+            foreach (var dir in DirectionTool.baseDirs)
             {
                 (Vector2Int? door, Vector2Int? end) = dir switch
                 {
@@ -84,7 +84,7 @@ public static class MapGenerator
                 Section sI = sections[i];
                 Section sJ = sections[j];
 
-                foreach (var dir in DirectionExtensions.baseDirs)
+                foreach (var dir in DirectionTool.baseDirs)
                 {
                     Vector2Int? eI = sI.GetRoadEnd(dir);
                     Vector2Int? eJ = sJ.GetRoadEnd(DirectionExtensions.GetOpposite(dir));

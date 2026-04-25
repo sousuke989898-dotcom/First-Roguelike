@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,14 +26,18 @@ public class Unit : Entity
 
     public RandomRange AttackDamage {get; private set;}
 
-    public Vector2Int IntaractMovement {get; protected set;}
+    public Vector2Int IntaractMovement {get; protected set;} //いらない
 
-    /// <summary>
-    /// アニメーション用
-    /// </summary>
+    /// <summary>アニメーション用</summary>
     public UnitActionState ActionState {get; protected set;}
 
-    public List<Vector2Int> ActionReservation {get; private set;} //(±1,±1)のvector情報リスト
+    // AbsPos
+    public List<Vector2Int> ActionReservation {get; private set;} = new();
+
+    public Vector2Int ActionDir {get; private set;} //(±1,±1)
+
+//  (±1,±1)の範囲に限定したVector2Intのstruct絶対座標のVector2Intのstruct 相対座標のVector2Intのstructをそれぞれ作るべき? そうした場合は大規模な改修になるけど((±1,±1)の範囲に限定したやつは相対座標で統一しても良い)
+
 
     public float AnimTimer {get; protected set;}
     public float TimeWhenTimerStarted {get; private set;}
@@ -138,32 +143,37 @@ public class Unit : Entity
     }
 
 
+    public bool TakeTurn()
+    {
+        if (ActionState != UnitActionState.Idle) return false;
+
+        if (ActionReservation == null || ActionReservation.Count == 0) return false;
+
+        var targetPos = ActionReservation[0];
+        ActionReservation.RemoveAt(0);
+
+        return InteractA(targetPos);
+    }
+
     /// <summary>
     /// 相対座標を受け取りその座標に対して行動を行う
     /// </summary>
     /// <param name="pos">相対座標</param>
     /// <returns></returns>
-    public bool Interact(Vector2Int pos)
+    public bool Interact(Vector2Int pos) //削除予定
     {
-        IntaractMovement = pos;
         Vector2Int targetPos = Pos + pos;
         InteractResult result = MapManager.Instance.Data.InteractCell(targetPos);
 
         switch (result)
         {
             case InteractResult.Move:
-                StartAnimation(0.1f, UnitActionState.Move);
-                MovePos(pos);
+                
                 return true;
 
 
             case InteractResult.Unit:
-                StartAnimation(0.1f, UnitActionState.Attack);
-                Unit target = MapManager.Instance.Data.GetUnit(targetPos);
-                if (target != null)
-                {
-                    Attack(target);
-                }
+                
                 return true;
         }
 
@@ -171,9 +181,61 @@ public class Unit : Entity
         return false;
     }
 
-    protected bool InteractAbsPos(Vector2Int pos) //絶対座標で動作する
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="targetPos"></param>
+    /// <returns></returns>
+    public bool InteractA(Vector2Int targetPos)
     {
+        ActionDir = targetPos - Pos;
+
+        var action = MapManager.Instance.Data.InteractCell(targetPos);
+        return action switch
+        {
+            InteractResult.Unit => AttackAction(targetPos),
+            InteractResult.Move => MoveAction(targetPos),
+            _ => false,
+        };
+    }
+
+    public bool AttackAction(Vector2Int targetPos)
+    {
+        Unit target = MapManager.Instance.Data.GetUnit(targetPos);
+        if (target == null) return false;
+
+        StartAnimation(0.1f, UnitActionState.Attack);
+        Attack(target);
+        return true;
+    }
+
+    public bool MoveAction(Vector2Int targetPos)
+    {
+        if (MovePos(targetPos))
+        {
+            StartAnimation(0.1f, UnitActionState.Move);
+            return true;
+        }
         return false;
+    }
+
+    /// <summary>
+    /// 行動リストに予定を追加する
+    /// </summary>
+    /// <param name="targetAbsPos"></param>
+    /// <returns></returns>
+    public bool SetPath(Vector2Int targetAbsPos) //絶対座標で動作する
+    {
+        ActionReservation.Clear();
+
+        var poss = PathFinder.GetPath(Pos,targetAbsPos);
+        if (poss.Count <= 0) return false;
+
+        if (poss == null || poss.Count <= 0) return false;
+
+        ActionReservation.AddRange(poss);
+        return true;
     }
 
 
@@ -200,6 +262,26 @@ public class Unit : Entity
     }
 
     /// <summary>
+    /// ダメージを受ける
+    /// </summary>
+    /// <param name="amount">量</param>
+    /// <returns>与えたダメージ</returns>
+    public int TakeDamage(int amount)
+    {
+        if (IsInvincible) return 0;
+        int damage = DamageFormula.Damagecalculation(amount,Defence);
+        if (damage <= 0) return 0;
+        SetHP(HP - damage);
+        return damage;
+    }
+
+    public int TakeDamage(RandomRange range)
+    {
+        int amount = range.GetRandomValue();
+        return TakeDamage(amount);
+    }
+
+    /// <summary>
     /// 最大HPと現在HPを新しく設定する
     /// </summary>
     /// <param name="amount">値</param>
@@ -221,26 +303,6 @@ public class Unit : Entity
         if (HP <= 0) Death();
 
         if (hpSlider != null) hpSlider.value = HP;
-    }
-
-    /// <summary>
-    /// ダメージを受ける
-    /// </summary>
-    /// <param name="amount">量</param>
-    /// <returns>与えたダメージ</returns>
-    public int TakeDamage(int amount)
-    {
-        if (IsInvincible) return 0;
-        int damage = DamageFormula.Damagecalculation(amount,Defence);
-        if (damage <= 0) return 0;
-        SetHP(HP - damage);
-        return damage;
-    }
-
-    public int TakeDamage(RandomRange range)
-    {
-        int amount = range.GetRandomValue();
-        return TakeDamage(amount);
     }
 
     /// <summary>

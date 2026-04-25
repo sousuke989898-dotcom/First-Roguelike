@@ -40,7 +40,7 @@ public static class PathFinder
                 return RetracePath(startNode, currentNode);
             }
 
-            foreach (Vector2Int vector in DirectionExtensions.DirectionVectors.Values)
+            foreach (Vector2Int vector in DirectionTool.DirectionVectors.Values)
             {
                 if (vector == Vector2Int.zero) continue;
                 Vector2Int pos = currentNode.Pos + vector;
