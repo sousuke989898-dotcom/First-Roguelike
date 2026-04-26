@@ -1,127 +1,113 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum InputCommand { None, Up, Down, Left, Right, UpLeft, UpRight, DownLeft, DownRight, Wait }
-
 public class KeyManager : MonoBehaviour
 {
-    private Dictionary<KeyCode, InputCommand> keyBindings;
-
-    private Dictionary<InputCommand, Vector2Int> keyMovements;
 
     private float inputBufferTimer = 0f;
     public const float combinationWindow = 0.04f; 
 
-    private List<InputCommand> inputCommands = new();
+    private bool waitingForInput = false;
 
-    void Awake()
+    private KeyCombo lastCombo = new(KeyCode.None);
+
+    private Dictionary<KeyCombo,InputCommand> singleKeyBindings = new()
     {
+        {new(KeyCode.W), InputCommand.Up},
+        {new(KeyCode.D), InputCommand.Right},
+        {new(KeyCode.S), InputCommand.Down},
+        {new(KeyCode.A), InputCommand.Left},
 
-        keyMovements = new()
-        {
-            {InputCommand.Up, Vector2Int.up},
-            {InputCommand.Down, Vector2Int.down},
-            {InputCommand.Left, Vector2Int.left},
-            {InputCommand.Right, Vector2Int.right},
-            
-        };
+        {new(KeyCode.UpArrow), InputCommand.Up},
+        {new(KeyCode.RightArrow), InputCommand.Right},
+        {new(KeyCode.DownArrow), InputCommand.Down},
+        {new(KeyCode.LeftArrow), InputCommand.Left},
+    };
 
+    private Dictionary<KeyCombo,InputCommand> doubleKeyBindings = new()
+    {
+        {new(KeyCode.W,KeyCode.D), InputCommand.UpRight},
+        {new(KeyCode.D,KeyCode.S), InputCommand.DownRight},
+        {new(KeyCode.S,KeyCode.A), InputCommand.DownLeft},
+        {new(KeyCode.A,KeyCode.W), InputCommand.UpLeft},
 
-        keyBindings = new()
-        {
-            {KeyCode.W, InputCommand.Up}, {KeyCode.UpArrow, InputCommand.Up},
-            {KeyCode.S, InputCommand.Down}, {KeyCode.DownArrow, InputCommand.Down},
-            {KeyCode.A, InputCommand.Left}, {KeyCode.LeftArrow, InputCommand.Left},
-            {KeyCode.D, InputCommand.Right}, {KeyCode.RightArrow, InputCommand.Right},
-            // {KeyCode.Q, InputCommand.UpLeft},
-            // {KeyCode.E, InputCommand.UpRight},
-            // {KeyCode.Z, InputCommand.DownLeft},
-            // {KeyCode.C, InputCommand.DownRight}
-        };
-    }
+        {new(KeyCode.UpArrow,KeyCode.RightArrow), InputCommand.UpRight},
+        {new(KeyCode.DownArrow,KeyCode.RightArrow), InputCommand.DownRight},
+        {new(KeyCode.DownArrow,KeyCode.LeftArrow), InputCommand.DownLeft},
+        {new(KeyCode.UpArrow,KeyCode.LeftArrow), InputCommand.UpLeft},
+    };
 
     public void Update()
     {
-        if (!TurnManager.Instance.CanStartTurn(Turn.Player)) return;
+        if (lastCombo.GetStatus() != ComboStatus.None) return;
+        lastCombo = KeyCombo.None;
 
         inputBufferTimer -= Time.deltaTime;
-        GetInputCommand();
-
-        if (inputBufferTimer <= 0)
+        InputCommand command = GetCommand();
+        if (command != InputCommand.None)
         {
-            if (inputCommands.Count != 0)
-            if (ExecuteMove())
-            {
-                TurnManager.Instance.EndTurn(Turn.Player);
-            }
+            ExecuteCommand(command);
         }
+
+        return;
     }
 
-
-
-    private void GetInputCommand()
+    private InputCommand GetCommand()
     {
-        foreach (var binding in keyBindings)
+        bool anyPartial = false;
+        foreach (var pair in doubleKeyBindings)
         {
-            if (Input.GetKeyDown(binding.Key))
+            var status = pair.Key.GetStatus();
+            if (status == ComboStatus.Press)
             {
-                InputCommand currentInput = binding.Value;
-                if (inputCommands.Contains(currentInput)) continue;
-
-                var combined = GetDiagonalComponents(currentInput);
-                if (combined.Count > 0)
-                {
-                    inputCommands = combined;
-                    inputBufferTimer = 0f;
-                    return;
-                }
-
-                inputCommands.Add(currentInput);
-
-                if (keyMovements.ContainsKey(binding.Value) && inputCommands.Count == 1) //今後移動以外の別のショートカットキーを追加することを想定して
-                {
-                    inputBufferTimer = combinationWindow;
-                }
-                else
-                {
-                    inputBufferTimer = 0f;
-                }
+                waitingForInput = false;
+                lastCombo = pair.Key;
+                return pair.Value;
             }
-        }
-    }
-
-    private bool ExecuteMove()
-    {
-        Vector2Int direction = Vector2Int.zero;
-        foreach(InputCommand command in inputCommands)
-        {
-            if (keyMovements[command] != null)
+            if (status == ComboStatus.Partial)
             {
-                direction += keyMovements[command];
+
+                anyPartial = true;
             }
         }
 
-        inputCommands.Clear();
+        if (anyPartial)
+        {
+            if (!waitingForInput)
+            {
+                inputBufferTimer = combinationWindow;
+                waitingForInput = true;
+            }
+        }
+        else
+        {
+            waitingForInput = false;
+        }
 
-        if (direction == Vector2Int.zero) return false;
-        Player player = GameManager.Instance.CurrentPlayer;
-        return player.Interact(direction);
+        if (inputBufferTimer <= 0 || !waitingForInput)
+        {
+            foreach (var pair in singleKeyBindings)
+            {
+                if (pair.Key.GetStatus() == ComboStatus.Press)
+                {
+                    waitingForInput = false;
+                    lastCombo = pair.Key;
+                    return pair.Value;
+                }
+            }
+        }
+        return InputCommand.None;
     }
 
-    /// <summary>
-    /// 斜め移動の向きを分解する
-    /// </summary>
-    /// <param name="command">InputComand</param>
-    /// <returns>引数が斜め移動だったら分解したものを、そうでなかったら何も入っていないものを返す</returns>
-    private List<InputCommand> GetDiagonalComponents(InputCommand command)
+    private bool ExecuteCommand(InputCommand command)
     {
-        return command switch
+        if (InputCommandTool.keyMovements.TryGetValue(command,out var dir))
         {
-            InputCommand.UpLeft    => new() { InputCommand.Up,   InputCommand.Left },
-            InputCommand.UpRight   => new() { InputCommand.Up,   InputCommand.Right },
-            InputCommand.DownLeft  => new() { InputCommand.Down, InputCommand.Left },
-            InputCommand.DownRight => new() { InputCommand.Down, InputCommand.Right },
-            _ => new List<InputCommand>()
-        };
+            Player player = GameManager.Instance.CurrentPlayer;
+            if (player == null) return false;
+            player.AddPath(dir);
+            return true;
+        }
+        return false;
     }
 }

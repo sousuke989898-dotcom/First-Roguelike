@@ -164,8 +164,9 @@ public class MapData
     /// 指定の場所が移動可能かどうかを取得する
     /// </summary>
     /// <param name="pos">マップ内の絶対座標</param>
-    public bool CanMove(Vector2Int pos) => IsInsideMap(pos) && GetTile(pos).CanMove() && GetUnit(pos) == null;
+    public bool CanMove(Vector2Int pos) => IsFloor(pos) && GetUnit(pos) == null;
 
+    public bool IsFloor(Vector2Int pos) => IsInsideMap(pos) && GetTile(pos).CanMove();
     /// <summary>
     /// スポーン可能な座標のリストを返す
     /// </summary>

@@ -48,7 +48,7 @@ public class EnemyManager : MonoBehaviour
     {
         foreach (Enemy enemy in Enemies)
         {
-            enemy.TakeAction();
+            enemy.TakeTurn();
         }
     }
 }

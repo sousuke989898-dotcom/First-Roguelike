@@ -17,13 +17,13 @@ public class Enemy : Unit
         EnemyManager.Instance.RemoveEnemy(this);
     }
 
-    public void TakeAction()
+
+    public override bool TakeTurn()
     {
-        if (ActionState == UnitActionState.Dead) return;
         Vector2Int diff = GetPlayerDiff();
+        AddPath(diff.GetDirection());
 
-        Interact(diff.NormalizedVector());
-
+        return base.TakeTurn();
     }
 
     /// <summary>

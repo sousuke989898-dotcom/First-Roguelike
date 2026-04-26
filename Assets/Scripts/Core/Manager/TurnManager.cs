@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public enum Turn {Player, Enemy}
@@ -11,15 +10,28 @@ public class TurnManager : MonoBehaviour
     }
 
 
-    public Turn CurrentTurn {get; private set;}
+    public Turn CurrentTurn {get; private set;} = Turn.Player;
 
     void Update()
     {
-        if (CanStartTurn(Turn.Enemy))
+        if (CurrentTurn == Turn.Player)
+        {
+            if (GameManager.Instance.CurrentPlayer.TakeTurn())
+            {
+                EndTurn(Turn.Player);
+            }
+        }
+        else
         {
             StartEnemyTurn();
-            EndTurn(Turn.Enemy); //todo プレイヤーのターンにするのをここでやらず、Enemyの行動が終わってからにする
+            EndTurn(Turn.Enemy);
         }
+
+        // if (CanStartTurn(Turn.Enemy))
+        // {
+        //     StartEnemyTurn();
+        //     EndTurn(Turn.Enemy); //todo プレイヤーのターンにするのをここでやらず、Enemyの行動が終わってからにする
+        // }
     }
 
     public bool CanStartTurn(Turn turn)

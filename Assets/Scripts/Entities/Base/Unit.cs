@@ -26,7 +26,6 @@ public class Unit : Entity
 
     public RandomRange AttackDamage {get; private set;}
 
-    public Vector2Int IntaractMovement {get; protected set;} //いらない
 
     /// <summary>アニメーション用</summary>
     public UnitActionState ActionState {get; protected set;}
@@ -76,6 +75,7 @@ public class Unit : Entity
         AnimTimer -= Time.deltaTime;
         float progress = AnimTimer / TimeWhenTimerStarted; 
 
+        Debug.Log(progress);
         switch (ActionState)
         {
             case UnitActionState.Move:
@@ -97,12 +97,18 @@ public class Unit : Entity
         ActionState = state;
     }
 
+    protected void EndAnimation()
+    {
+        ActionState = UnitActionState.Idle;
+        SetTransform(Pos);
+        UnitManager.Instance.EndAnim(this);
+    }
+
     protected void MoveAnimation(float progress)
     {
         if (AnimTimer <= 0f)
         {
-            ActionState = UnitActionState.Idle;
-            SetTransform(Pos);
+            EndAnimation();
         }
         else
         {
@@ -117,13 +123,12 @@ public class Unit : Entity
     {
         if (AnimTimer <= 0f)
         {
-            ActionState = UnitActionState.Idle;
-            SetTransform(Pos);
+            EndAnimation();
         }
         else
         {
             float weight = Mathf.Sin(progress * Mathf.PI) * 0.2f;
-            SetTransform(Pos + (new Vector2(IntaractMovement.x,IntaractMovement.y) * weight));
+            SetTransform(Pos + (new Vector2(ActionDir.x, ActionDir.y) * weight));
         }
     }
 
@@ -143,7 +148,7 @@ public class Unit : Entity
     }
 
 
-    public bool TakeTurn()
+    public virtual bool TakeTurn()
     {
         if (ActionState != UnitActionState.Idle) return false;
 
@@ -152,33 +157,7 @@ public class Unit : Entity
         var targetPos = ActionReservation[0];
         ActionReservation.RemoveAt(0);
 
-        return InteractA(targetPos);
-    }
-
-    /// <summary>
-    /// 相対座標を受け取りその座標に対して行動を行う
-    /// </summary>
-    /// <param name="pos">相対座標</param>
-    /// <returns></returns>
-    public bool Interact(Vector2Int pos) //削除予定
-    {
-        Vector2Int targetPos = Pos + pos;
-        InteractResult result = MapManager.Instance.Data.InteractCell(targetPos);
-
-        switch (result)
-        {
-            case InteractResult.Move:
-                
-                return true;
-
-
-            case InteractResult.Unit:
-                
-                return true;
-        }
-
-
-        return false;
+        return Interact(targetPos);
     }
 
 
@@ -187,11 +166,12 @@ public class Unit : Entity
     /// </summary>
     /// <param name="targetPos"></param>
     /// <returns></returns>
-    public bool InteractA(Vector2Int targetPos)
+    protected bool Interact(Vector2Int targetPos)
     {
         ActionDir = targetPos - Pos;
 
         var action = MapManager.Instance.Data.InteractCell(targetPos);
+        Debug.Log(action.ToString() +". " +targetPos);
         return action switch
         {
             InteractResult.Unit => AttackAction(targetPos),
@@ -207,14 +187,18 @@ public class Unit : Entity
 
         StartAnimation(0.1f, UnitActionState.Attack);
         Attack(target);
+
+        UnitManager.Instance.OnStartAttack(this);
         return true;
     }
 
     public bool MoveAction(Vector2Int targetPos)
     {
-        if (MovePos(targetPos))
+        if (SetPos(targetPos))
         {
             StartAnimation(0.1f, UnitActionState.Move);
+            UnitManager.Instance.OnStartMove(this);
+
             return true;
         }
         return false;
@@ -225,7 +209,7 @@ public class Unit : Entity
     /// </summary>
     /// <param name="targetAbsPos"></param>
     /// <returns></returns>
-    public bool SetPath(Vector2Int targetAbsPos) //絶対座標で動作する
+    public bool GetPath(Vector2Int targetAbsPos) //絶対座標で動作する
     {
         ActionReservation.Clear();
 
@@ -238,6 +222,25 @@ public class Unit : Entity
         return true;
     }
 
+    public void AddPath(Direction dir)
+    {
+        Vector2Int vector = dir.GetVector();
+        Vector2Int lastPos;
+        if (ActionReservation.Count == 0)
+        {
+            lastPos = Pos;
+        }
+        else
+        {
+            lastPos = ActionReservation[^1];
+        }
+
+        Vector2Int targetPos = lastPos + vector;
+        if (MapManager.Instance.Data.IsFloor(targetPos))
+        {
+            ActionReservation.Add(targetPos);
+        }
+    }
 
     /// <summary>
     /// 攻撃する
