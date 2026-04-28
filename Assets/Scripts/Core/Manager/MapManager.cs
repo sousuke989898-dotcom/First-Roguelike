@@ -9,6 +9,9 @@ public class MapManager : MonoBehaviour
     [SerializeField] private Tile WallPrefab;
     [SerializeField] private Tile FloorPrefab;
 
+    [SerializeField] private Tile WallHighLightPrefab;
+    [SerializeField] private Tile FloorHighLightPrefab;
+
     [Header("InitialSize")]
 
     [SerializeField] private int InitSizeX;
@@ -47,7 +50,7 @@ public class MapManager : MonoBehaviour
             for (int y = 0; y < SizeY; y++)
             {
                 Tile tile = null;
-                switch (Data.GetTile(new(x,y)))
+                switch (Data.GetTileType(new(x,y)))
                 {
                     case TileType.Wall:
                         tile = WallPrefab;

@@ -659,8 +659,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MManager
   Tilemap: {fileID: 285185113}
-  WallPrefab: {fileID: 11400000, guid: 3514c2973a4604064809c99252ef61af, type: 2}
-  FloorPrefab: {fileID: 11400000, guid: ddb43ba86c57e4216a420c2e5893a604, type: 2}
+  WallPrefab: {fileID: 11400000, guid: 2613013c8006b4fdfb2489c4da46b22e, type: 2}
+  FloorPrefab: {fileID: 11400000, guid: ec7dbe0bf22704776934cebf015a603b, type: 2}
+  WallHighLightPrefab: {fileID: 0}
+  FloorHighLightPrefab: {fileID: 0}
   InitSizeX: 50
   InitSizeY: 50
   MaxRoomCount: 10
