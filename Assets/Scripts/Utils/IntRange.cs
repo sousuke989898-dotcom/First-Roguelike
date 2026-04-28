@@ -27,9 +27,11 @@ public struct IntRange
     }
 
     // Unityで使用する場合
+    /// <summary>値域内のランダムな値を取得する</summary>
     public readonly int Value => UnityEngine.Random.Range(min, max +1);
 
     /* // 純粋なC#環境で使用する場合
+    /// <summary>値域内のランダムな値を取得する</summary>
     private static readonly System.Random _sysRand = new System.Random();
     public readonly int Value => _sysRand.Next(min, max + 1);
     */
@@ -38,6 +40,7 @@ public struct IntRange
     public readonly int Clamp(int value) => Math.Clamp(value, min, max);
     public readonly IntRange ClampRange(int minLimit, int maxLimit) =>
         new(Math.Clamp(min, minLimit, maxLimit), Math.Clamp(max, minLimit, maxLimit));
+    public readonly IntRange ClampRange(IntRange r) => ClampRange(r.min, r.max);
 
     public readonly bool Contains(int value) => value >= min && value <= max;
 
@@ -55,12 +58,17 @@ public struct IntRange
     public static IntRange Add(IntRange r1, IntRange r2) => new(r1.min + r2.min, r1.max + r2.max);
     public static IntRange Sub(IntRange r1, IntRange r2) => new(r1.min - r2.min, r1.max - r2.max);
     public static IntRange Mul(IntRange r, int m) => new(r.min * m, r.max * m);
+    public static IntRange Mul(IntRange r, float m) => new((int)Math.Round(r.min * m), (int)Math.Round(r.max * m));
     public static IntRange Div(IntRange r, int d) => new(r.min / d, r.max / d);
+    public static IntRange Div(IntRange r, float d) => new((int)Math.Round(r.min / d), (int)Math.Round(r.max / d));
+
 
     public static IntRange operator +(IntRange r1, IntRange r2) => Add(r1, r2);
     public static IntRange operator -(IntRange r1, IntRange r2) => Sub(r1, r2);
     public static IntRange operator *(IntRange r, int m) => Mul(r, m);
     public static IntRange operator /(IntRange r, int d) => Div(r, d);
+    public static IntRange operator *(IntRange r, float m) => Mul(r, m);
+    public static IntRange operator /(IntRange r, float d) => Div(r, d);
 
     public static bool operator ==(IntRange r1, IntRange r2) => r1.Equals(r2);
     public static bool operator !=(IntRange r1, IntRange r2) => !r1.Equals(r2);
