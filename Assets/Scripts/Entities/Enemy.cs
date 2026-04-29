@@ -5,7 +5,7 @@ public class Enemy : Unit
 {
     public EnemyMoveState EnemyState {get; protected set;}
 
-    public override void InitUnit(int hp, RandomRange atkRange, Vector2Int pos, string name)
+    public override void InitUnit(int hp, IntRange atkRange, Vector2Int pos, string name)
     {
         base.InitUnit(hp,atkRange,pos,name);
         EnemyState = EnemyMoveState.Chase;//試験用

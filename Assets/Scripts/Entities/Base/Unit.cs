@@ -13,18 +13,7 @@ public class Unit : Entity
 {
     public string Name {get; protected set;}
 
-    public int HP {get; protected set ;}
-    public int MaxHP {get; protected set;}
-
-    public RandomRange Defence {get; protected set;}
-
-    /// <summary>無敵かどうか</summary>
-    public bool IsInvincible{get; protected set;} //使うかどうかは未定
-
-    public bool IsDead => HP <= 0;
-
-    public RandomRange AttackDamage {get; private set;}
-
+    public Status Status {get; protected set;}
 
     /// <summary>アニメーション用</summary>
     public UnitActionState ActionState {get; protected set;}
@@ -34,33 +23,21 @@ public class Unit : Entity
 
     public Vector2Int ActionDir {get; private set;} //(±1,±1)
 
-//  (±1,±1)の範囲に限定したVector2Intのstruct絶対座標のVector2Intのstruct 相対座標のVector2Intのstructをそれぞれ作るべき? そうした場合は大規模な改修になるけど((±1,±1)の範囲に限定したやつは相対座標で統一しても良い)
-
-
     public float AnimTimer {get; protected set;}
-    public float TimeWhenTimerStarted {get; private set;}
+    public float MaxTime {get; protected set;}
 
     [SerializeField] protected SpriteRenderer spriteRenderer ;
 
     protected Slider hpSlider;
 
-    /// <summary>
-    /// ユニットの初期化
-    /// </summary>
-    /// <param name="hp">初期HP</param>
-    /// <param name="atkRange">攻撃力の最小値と最大値</param>
-    /// <param name="pos">初期位置</param>
-    public virtual void InitUnit(int hp, RandomRange atkRange, Vector2Int pos, string name)
+    public virtual void InitUnit(int hp, IntRange atk, Vector2Int pos, string name)
     {
         InitEntity(pos);
         Name = name;
-        InitializeHP(hp);
-        AttackDamage = atkRange;
+        Status = new(hp, atk, new(0));
         ActionState = UnitActionState.Idle;
-
         UnitManager.Instance.AddUnit(this);
     }
-
 
 
     void Update()
@@ -72,9 +49,8 @@ public class Unit : Entity
     {
         if (ActionState == UnitActionState.Idle || ActionState == UnitActionState.Destroy) return;
         AnimTimer -= Time.deltaTime;
-        float progress = AnimTimer / TimeWhenTimerStarted; 
+        float progress = (MaxTime != 0) ? 1 - (AnimTimer / MaxTime) : 0; // (0.0 ~ 1.0)
 
-        Debug.Log(progress);
         switch (ActionState)
         {
             case UnitActionState.Move:
@@ -91,7 +67,7 @@ public class Unit : Entity
 
     protected void StartAnimation(float time, UnitActionState state)
     {
-        TimeWhenTimerStarted = time;
+        MaxTime = time;
         AnimTimer = time;
         ActionState = state;
     }
@@ -111,10 +87,7 @@ public class Unit : Entity
         }
         else
         {
-            Vector2 vector2 = Pos - OldPos;
-            Vector2 currentLerpPos = OldPos + (vector2 * (1 - progress));
-            float height = Mathf.Sin(progress * Mathf.PI) * 0.1f;
-            SetTransform(currentLerpPos + new Vector2(0, height));
+            SetTransform(OldPos + (((Vector2)ActionDir) * progress ));
         }
     }
 
@@ -126,8 +99,8 @@ public class Unit : Entity
         }
         else
         {
-            float weight = Mathf.Sin(progress * Mathf.PI) * 0.2f;
-            SetTransform(Pos + (new Vector2(ActionDir.x, ActionDir.y) * weight));
+            float weight = Mathf.Sin(progress * 180) * 0.2f;
+            SetTransform(Pos + (((Vector2)ActionDir) * weight));
         }
     }
 
@@ -142,7 +115,7 @@ public class Unit : Entity
         }
         else
         {
-            spriteRenderer.color = new Color(c.r, c.g, c.b, progress);
+            spriteRenderer.color = new Color(c.r, c.g, c.b, 1-progress);
         }
     }
 
@@ -170,7 +143,6 @@ public class Unit : Entity
         ActionDir = targetPos - Pos;
 
         var action = MapManager.Instance.Data.InteractCell(targetPos);
-        Debug.Log(action.ToString() +". " +targetPos);
         return action switch
         {
             InteractResult.Unit => AttackAction(targetPos),
@@ -241,125 +213,21 @@ public class Unit : Entity
         }
     }
 
-    /// <summary>
-    /// 攻撃する
-    /// </summary>
-    /// <param name="target">標的</param>
-    /// <returns>与えたダメージ量</returns>
-    protected int Attack(Unit target)
-    {
-        return target.TakeDamage(AttackDamage);
-    }
 
-    /// <summary>
-    /// 攻撃する
-    /// </summary>
-    /// <param name="pos">標的の座標</param>
-    /// <returns>与えたダメージ量</returns>
-    protected int Attack(Vector2Int pos)
-    {
-        Unit target = MapManager.Instance.Data.GetUnit(pos);
-        Debug.Log(target);
-        return Attack(target);
-    }
+    protected int Attack(Unit target) => target.TakeDamage(Status);
 
-    /// <summary>
-    /// ダメージを受ける
-    /// </summary>
-    /// <param name="amount">量</param>
-    /// <returns>与えたダメージ</returns>
-    public int TakeDamage(int amount)
+    public int TakeDamage(Status attakerStatus)
     {
-        if (IsInvincible) return 0;
-        int damage = DamageFormula.Damagecalculation(amount,Defence);
-        if (damage <= 0) return 0;
-        SetHP(HP - damage);
+        int damage = Status.TakeDamage(attakerStatus);
+        UpdateSlider();
+        if (Status.IsDead) Death();
         return damage;
     }
 
-    public int TakeDamage(RandomRange range)
-    {
-        int amount = range.GetRandomValue();
-        return TakeDamage(amount);
-    }
 
-    /// <summary>
-    /// 最大HPと現在HPを新しく設定する
-    /// </summary>
-    /// <param name="amount">値</param>
-    public void InitializeHP(int amount)
-    {
-        if (amount <= 0) return;
-        SetMaxHP(amount);
-        SetHP(amount);
-    }
-
-    /// <summary>
-    /// 実体力を設定する
-    /// </summary>
-    /// <param name="amount">MaxHP > amount > 0</param>
-    protected void SetHP(int amount)
-    {
-        HP = amount;
-        if (HP > MaxHP) HP = MaxHP;
-        if (HP <= 0) Death();
-
-        if (hpSlider != null) hpSlider.value = HP;
-    }
-
-    /// <summary>
-    /// 体力を回復する
-    /// </summary>
-    /// <param name="amount">amout > 0</param>
-    /// <returns>回復した量</returns>
-    public int HealHP(int amount)
-    {
-        if (amount <= 0) return 0;
-        SetHP(HP + amount);
-        return amount;
-    }
-
-    /// <summary>
-    /// 体力最大値を設定する 実体力は変更しない
-    /// </summary>
-    /// <param name="amount">変更後</param>
-    protected void SetMaxHP(int amount)
-    {
-        if(amount <= 0) return;
-        MaxHP = amount;
-        if (hpSlider != null) hpSlider.maxValue = MaxHP;
-    }
-
-    /// <summary>
-    /// 体力最大値を変更する 実体力は変更しない
-    /// </summary>
-    /// <param name="amount">量</param>
-    public void ChangeMaxHP(int amount)
-    {
-        if(MaxHP + amount <= 0)
-        {
-            MaxHP = 1;
-            return;
-        }
-        SetMaxHP(MaxHP + amount);
-    }
-
-    /// <summary>
-    /// ディフェンスの範囲を設定する
-    /// </summary>
-    /// <param name="range"></param>
-    public void SetDefence(RandomRange range)
-    {
-        Defence = range;
-    }
-
-    /// <summary>
-    /// 死ぬ・破壊される
-    /// </summary>
     public void Death()
     {
-        if (HP > 0) return;
-        HP = 0;
+        if (!Status.IsDead) return;
         StartAnimation(1f, UnitActionState.Dead);
 
         UnitManager.Instance.RemoveUnit(this);
@@ -369,7 +237,13 @@ public class Unit : Entity
     public void SetHPSlider(Slider slider)
     {
         hpSlider = slider;
-        hpSlider.maxValue = MaxHP;
-        hpSlider.value = HP;
+        UpdateSlider();
+    }
+
+    public void UpdateSlider()
+    {
+        if (hpSlider == null) return;
+        hpSlider.maxValue = Status.MaxHp;
+        hpSlider.value = Status.HP;
     }
 }

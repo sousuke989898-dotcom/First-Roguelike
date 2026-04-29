@@ -10,6 +10,12 @@ public class Status
     public Param Def;
     public bool IsDead => HP == 0;
 
+    //Enum Buff buff;
+    //enum Debuff debuff
+    //enum int[] buffTurn = new int[BuffTool.count]
+    //enum int[] debuffTurn = new int[DebuffTool.count]
+
+
     public Status(int hp, IntRange atk, IntRange def)
     {
         MaxHp = new Param(hp); 
