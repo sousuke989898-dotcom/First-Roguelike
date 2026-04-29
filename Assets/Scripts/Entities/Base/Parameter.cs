@@ -16,7 +16,13 @@ public class Param
         BaseValue = range;
     }
 
+    public Param(int value)
+    {
+        BaseValue = new(value);
+    }
+
     public int Addmodifier(IntRange range) => AddFlatModifier(range);
+    public int Addmodifier(int value) => AddFlatModifier(new IntRange(value));
     public int Addmodifier(float f) => AddPercentModifier(f);
 
     public void RemoveModifier(int key)
@@ -65,5 +71,9 @@ public class Param
 
     public void SetBase(IntRange range) => BaseValue = range;
     public void AddBase(IntRange range) => BaseValue += range;
+
+    public void SetBase(int value) => BaseValue = new IntRange(value);
+    public void AddBase(int value) => BaseValue += new IntRange(value);
+
 
 }
