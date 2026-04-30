@@ -246,4 +246,14 @@ public class Unit : Entity
         hpSlider.maxValue = Status.MaxHp;
         hpSlider.value = Status.HP;
     }
+
+    public void INitStatus()
+    {
+        Status.OnHpChanged += (hp, maxhp) =>
+        {
+            hpSlider.maxValue = maxhp;
+            hpSlider.value = hp;
+        };
+    }
+
 }

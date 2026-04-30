@@ -10,6 +10,8 @@ public class Status
     public Param Def;
     public bool IsDead => HP == 0;
 
+    public event Action<int,int> OnHpChanged;
+
     //Enum Buff buff;
     //enum Debuff debuff
     //enum int[] buffTurn = new int[BuffTool.count]
@@ -35,7 +37,11 @@ public class Status
         return damage;
     }
 
-    public void SetHP(int amount) => HP = Math.Clamp(amount, 0, MaxHp);
+    public void SetHP(int amount)
+    {
+        HP = Math.Clamp(amount, 0, MaxHp);
+        OnHpChanged?.Invoke(HP, MaxHp);
+    }
     /// <param name="amount">(0.0 ~ 1.0)</param>
     public void SetHP(float amount) => SetHP(Mathf.Lerp(0, MaxHp, Mathf.Clamp(amount,0,1)));
 
