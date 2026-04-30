@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+
+public enum ParamType{MaxHP, Atk, Def}
 
 public class Status
 {
@@ -8,9 +11,11 @@ public class Status
 
     public Param Atk;
     public Param Def;
+
     public bool IsDead => HP == 0;
 
     public event Action<int,int> OnHpChanged;
+
 
     //Enum Buff buff;
     //enum Debuff debuff
@@ -23,12 +28,8 @@ public class Status
         MaxHp = new Param(hp); 
         Atk = new Param(atk);
         Def = new Param(def);
-        InitHP(hp);
-    }
 
-    public void TakeTurn()
-    {
-        
+        InitHP(hp);
     }
 
     public int DealDamage(Status target) => target.TakeDamage(this);
@@ -62,5 +63,7 @@ public class Status
         MaxHp.SetBase(amount);
         SetHP(amount);
     }
+
+
 
 }

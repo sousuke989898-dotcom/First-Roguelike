@@ -4,57 +4,53 @@ public class Param
 {
     public IntRange BaseValue {get; private set;}
 
-    public Dictionary<int, IntRange> _flatModifiers = new();
-    public Dictionary<int, float> _percentModifiers = new(); //0.1f = +10%
+    public List<IModifier> _Mods = new();
 
-    public HashSet<Modifier> _Modifiers = new();
-
-    public IntRange Total => GetSum();
+    public IntRange Sum;
 
     public Param(IntRange range)
     {
         BaseValue = range;
+        SetSum();
     }
 
     public Param(int value)
     {
         BaseValue = new(value);
+        SetSum();
     }
 
-    public void Addmodifier(Modifier modifier)
+    public void AddMod(IModifier modifier)
     {
-        _Modifiers.Add(modifier);
+        _Mods.Add(modifier);
+        SetSum();
     }
+    
 
-    public void RemoveModifier(Modifier modifier)
+    public void RemoveMod(IModifier modifier)
     {
-        _Modifiers.Remove(modifier);
+        _Mods.Remove(modifier);
+        SetSum();
     }
 
-    public IntRange GetSum()
+    public void SetSum()
     {
         IntRange flatValue = BaseValue;
         float magnification = 1.0f;
-        foreach (Modifier modifier in _Modifiers)
+        foreach (IModifier modifier in _Mods)
         {
-            if (modifier is RangeModifier rangeModifier)
-            {
-                flatValue += rangeModifier.Value;
-            }
-            else if (modifier is FloatModifier floatModifier)
-            {
-                magnification += floatModifier.Value;
-            }
+            modifier.Apply(ref flatValue, ref magnification);
         }
-        return flatValue * magnification;
+        Sum = flatValue * magnification;
     }
+
 
     // public override string ToString()
     // {
         
     // }
 
-    public static implicit operator int(Param p) => p.Total.Value;
+    public static implicit operator int(Param p) => p.Sum.Value;
 
     public void SetBase(IntRange range) => BaseValue = range;
     public void AddBase(IntRange range) => BaseValue += range;

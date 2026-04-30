@@ -16,7 +16,7 @@ public static class DamageFormula
 
     public static int Damagecalculation(Status attaker, Status defender)
     {
-        int damage = attaker.Atk.Total.Value - defender.Def.Total.Value;
+        int damage = attaker.Atk.Sum.Value - defender.Def.Sum.Value;
         return damage;
     }
 }

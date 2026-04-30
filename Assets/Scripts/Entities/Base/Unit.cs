@@ -146,8 +146,8 @@ public class Unit : Entity
         var action = MapManager.Instance.Data.InteractCell(targetPos);
         return action switch
         {
-            InteractResult.Unit => AttackAction(targetPos),
-            InteractResult.Move => MoveAction(targetPos),
+            InteractType.Unit => AttackAction(targetPos),
+            InteractType.Move => MoveAction(targetPos),
             _ => false,
         };
     }

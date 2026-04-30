@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum InteractResult {Move, Unit, Entity, Open, None}; //todo 要検討
+public enum InteractType {Move, Unit, Entity, Open, None}; //todo 要検討
 
 public class MapData
 {
@@ -103,19 +103,19 @@ public class MapData
     /// 指定の座標に操作した場合の行動を返す
     /// </summary>
     /// <param name="pos"></param>
-    public InteractResult InteractCell(Vector2Int pos) //todo HashSet<Entity>を返すだけでいいかも知れない
+    public InteractType InteractCell(Vector2Int pos) //todo HashSet<Entity>を返すだけでいいかも知れない
     {
-        if(!IsInsideMap(pos)) return InteractResult.None;
+        if(!IsInsideMap(pos)) return InteractType.None;
 
         HashSet<Entity> entities = GetEntities(pos);
-        if(GetUnit(entities) != null) return InteractResult.Unit;
+        if(GetUnit(entities) != null) return InteractType.Unit;
 
 
         TileType tile = GetTileType(pos);
 
-        if (tile.CanMove()) return InteractResult.Move;
+        if (tile.CanMove()) return InteractType.Move;
 
-        return InteractResult.None;
+        return InteractType.None;
     }
 
     /// <summary>
