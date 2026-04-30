@@ -35,6 +35,7 @@ public class Unit : Entity
         InitEntity(pos);
         Name = name;
         Status = new(hp, atk, new(0));
+
         ActionState = UnitActionState.Idle;
         UnitManager.Instance.AddUnit(this);
     }
@@ -219,7 +220,6 @@ public class Unit : Entity
     public int TakeDamage(Status attakerStatus)
     {
         int damage = Status.TakeDamage(attakerStatus);
-        UpdateSlider();
         if (Status.IsDead) Death();
         return damage;
     }
@@ -237,23 +237,18 @@ public class Unit : Entity
     public void SetHPSlider(Slider slider)
     {
         hpSlider = slider;
-        UpdateSlider();
+        InitStatus();
     }
 
-    public void UpdateSlider()
-    {
-        if (hpSlider == null) return;
-        hpSlider.maxValue = Status.MaxHp;
-        hpSlider.value = Status.HP;
-    }
 
-    public void INitStatus()
+    public void InitStatus()
     {
         Status.OnHpChanged += (hp, maxhp) =>
         {
             hpSlider.maxValue = maxhp;
             hpSlider.value = hp;
         };
+        Status.SetHP(Status.MaxHp);
     }
 
 }
