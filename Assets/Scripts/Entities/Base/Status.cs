@@ -26,20 +26,14 @@ public class Status
         InitHP(hp);
     }
 
-    public Status(int hp, IntRange atk, IntRange def,Action<int,int> hpChangeAction)
+    public void TakeTurn()
     {
-        MaxHp = new Param(hp); 
-        Atk = new Param(atk);
-        Def = new Param(def);
-        OnHpChanged += hpChangeAction;
-
-        InitHP(hp);
+        
     }
 
+    public int DealDamage(Status target) => target.TakeDamage(this);
 
-    public virtual int DealDamage(Status target) => target.TakeDamage(this);
-
-    public virtual int TakeDamage(Status attker)
+    public int TakeDamage(Status attker)
     {
         int damage = DamageFormula.Damagecalculation(attker, this);
         damage = Math.Max(0, damage);

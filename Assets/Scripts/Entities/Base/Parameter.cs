@@ -7,9 +7,9 @@ public class Param
     public Dictionary<int, IntRange> _flatModifiers = new();
     public Dictionary<int, float> _percentModifiers = new(); //0.1f = +10%
 
-    private int _nextId = 0;
+    public HashSet<Modifier> _Modifiers = new();
 
-    public IntRange Total =>  GetFlatSum() * GetPercentSum();
+    public IntRange Total => GetSum();
 
     public Param(IntRange range)
     {
@@ -21,51 +21,38 @@ public class Param
         BaseValue = new(value);
     }
 
-    public int Addmodifier(IntRange range) => AddFlatModifier(range);
-    public int Addmodifier(int value) => AddFlatModifier(new IntRange(value));
-    public int Addmodifier(float f) => AddPercentModifier(f);
-
-    public void RemoveModifier(int key)
+    public void Addmodifier(Modifier modifier)
     {
-        _flatModifiers.Remove(key);
-        _percentModifiers.Remove(key);
+        _Modifiers.Add(modifier);
     }
 
-    private int AddFlatModifier(IntRange range)
+    public void RemoveModifier(Modifier modifier)
     {
-        int id = _nextId++;
-        _flatModifiers.Add(id, range);
-        return id;
+        _Modifiers.Remove(modifier);
     }
 
-    private int AddPercentModifier(float f)
+    public IntRange GetSum()
     {
-        int id = _nextId++;
-        _percentModifiers.Add(id, f);
-        return id;
+        IntRange flatValue = BaseValue;
+        float magnification = 1.0f;
+        foreach (Modifier modifier in _Modifiers)
+        {
+            if (modifier is RangeModifier rangeModifier)
+            {
+                flatValue += rangeModifier.Value;
+            }
+            else if (modifier is FloatModifier floatModifier)
+            {
+                magnification += floatModifier.Value;
+            }
+        }
+        return flatValue * magnification;
     }
 
-
-    public IntRange GetFlatSum() =>  BaseValue + GetFlatModifiersSum();
-
-    public IntRange GetFlatModifiersSum()
-    {
-        IntRange result = IntRange.None;
-        foreach(var r in _flatModifiers.Values) result += r;
-        return result;
-    }
-
-    public float GetPercentSum()
-    {
-        float result = 1.0f;
-        foreach(var p in _percentModifiers.Values) result += p;
-        return System.Math.Max(0f, result);;
-    }
-
-    public override string ToString()
-    {
-        return $"({BaseValue} + {GetFlatModifiersSum()}) * {System.Math.Round(GetPercentSum() * 100)} %";
-    }
+    // public override string ToString()
+    // {
+        
+    // }
 
     public static implicit operator int(Param p) => p.Total.Value;
 
