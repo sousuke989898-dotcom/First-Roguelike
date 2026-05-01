@@ -16,7 +16,7 @@ public class Status
 
     public event Action<int,int> OnHpChanged;
 
-    public List<Effect> effects;
+    public Dictionary<EffectType, Effect> effects;
 
     public Status(int hp, IntRange atk, IntRange def)
     {
@@ -30,19 +30,19 @@ public class Status
     public void OnTurnEnd()
     {
         List<Effect> removeEffects = new();
-        foreach (Effect effect in effects)
+        foreach (Effect effect in effects.Values)
         {
             if (effect.Tick(this)) removeEffects.Add(effect);
         }
 
         foreach (Effect effect in removeEffects)
         {
-            if (effect is IModEffect modEffect)
+            if (effect is ModEffect modEffect)
             {
                 modEffect.OnRemove(this);
             }
 
-            effects.Remove(effect);
+            effects.Remove(effect.EffectType);
         }
     }
 
@@ -78,13 +78,20 @@ public class Status
         SetHP(amount);
     }
 
-    public void ApplyEffect(EffectType effectType)
+    public void ApplyEffect(EffectType effectType, int stack)
     {
-        Effect effect = Effect.GetEffect(effectType);
-        effects.Add(effect);
-        if (effect is IModEffect modEffect)
+        if (effects.ContainsKey(effectType))
         {
-            modEffect.OnApply(this);
+            effects[effectType].AddStack(this, stack);
+        }
+        else
+        {
+            Effect effect = EffectTool.GetEffect(effectType, 3);
+            effects.Add(effectType, effect);
+            if (effect is ModEffect modEffect)
+            {
+                modEffect.OnApply(this);
+            }
         }
     }
 
