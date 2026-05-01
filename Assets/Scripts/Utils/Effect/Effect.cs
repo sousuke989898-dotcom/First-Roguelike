@@ -1,53 +1,66 @@
-using System;
+using System.Collections.Generic;
 
-public enum EffectType{Poison}
+public enum EffectType{Poison,AddStr}
 
-public class Effect
+public abstract class Effect
 {
-    public EffectType effectType;
-    public int count;
+    public abstract EffectType EffectType {get;}
+    public int Duration {get; protected set;}
 
-    public Action Action;
-
-    public Effect(EffectType effectType, int count)
+    public Effect(int duration)
     {
-        this.effectType = effectType;
-        this.count = count;
+        Duration = duration;
     }
 
-    public virtual bool Tick()
+    public virtual bool Tick(Status status)
     {
-        count --;
-        return count == 0;
+        Duration--;
+        return Duration <= 0;
     }
 
+    public static Effect GetEffect(EffectType effectType) //todo　マジックナンバーの解消
+    {
+        return effectType switch
+        {
+            EffectType.Poison => new PoisonEffect(20),
+            EffectType.AddStr => new AddSTrEffect(20, new RangeModifier(1)),
+            _ => null,
+        };
+    }
 }
 
-// public class StatusEffect : Effect
-// {
-//     public Param param;
-//     public IModifier mod;
+public interface IModEffect
+{
+    void OnApply(Status status);
+    void OnRemove(Status status);
+}
 
-//     public StatusEffect(, int count, Param param, IModifier mod) : base(name,count)
-//     {
-//         this.param = param;
-//         this.mod = mod;
-//     }
 
-//     public void OnApply() => param.AddMod(mod);
-//     public void OnRemove() => param.RemoveMod(mod);
-// }
 
-// public class ConditionEffect : Effect
-// {
-//     public ConditionEffect(string name, int count, Action action) : base(name, count)
-//     {
-//         Action += action;
-//     }
+public class PoisonEffect : Effect
+{
+    public override EffectType EffectType => EffectType.Poison;
+    public PoisonEffect(int duration) : base( duration) { }
 
-//     public override bool Tick()
-//     {
-//         Action.Invoke();
-//         return base.Tick();
-//     }
-// }
+    public override bool Tick(Status status)
+    {
+        status.HurtHP(0.01f); // (1%)
+        return base.Tick(status);
+    }
+}
+
+public class AddSTrEffect : Effect, IModEffect
+{
+    public IModifier Mod {get; protected set;}
+    public override EffectType EffectType => EffectType.AddStr;
+
+    
+    public AddSTrEffect(int duration, IModifier mod) : base(duration)
+    {
+        Mod = mod;
+    }
+
+    public void OnApply(Status status) => status.Atk.AddMod(Mod);
+    public void OnRemove(Status status) => status.Atk.RemoveMod(Mod);
+
+}

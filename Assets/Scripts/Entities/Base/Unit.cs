@@ -130,7 +130,12 @@ public class Unit : Entity
         var targetPos = ActionReservation[0];
         ActionReservation.RemoveAt(0);
 
-        return Interact(targetPos);
+        if (Interact(targetPos))
+        {
+            Status.OnTurnEnd();
+            return true;
+        }
+        return false;
     }
 
 

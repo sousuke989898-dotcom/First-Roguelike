@@ -6,6 +6,11 @@ public class RangeModifier : IModifier
     {
         this.Value = Value;
     }
+
+    public RangeModifier(int min, int max)
+    {
+        Value = new IntRange(min,max);
+    }
     
     public RangeModifier(int Value)
     {
