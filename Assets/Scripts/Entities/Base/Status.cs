@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Effect;
 
 public enum ParamType{MaxHP, Atk, Def}
 

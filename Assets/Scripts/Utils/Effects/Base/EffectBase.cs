@@ -1,45 +1,47 @@
-using System.Collections.Generic;
-
-
-public abstract class Effect
+namespace Game.Effect
 {
-    public abstract EffectType EffectType {get;}
-    public int Duration {get; protected set;}
-    public int Stack {get; protected set;}
+    using System.Collections.Generic;
 
-    public Effect(int duration)
+    public abstract class Effect
     {
-        Duration = duration;
-    }
+        public abstract EffectType EffectType {get;}
+        public int Duration {get; protected set;}
+        public int Stack {get; protected set;}
 
-    public virtual bool Tick(Status status)
-    {
-        Duration--;
-        return Duration <= 0;
-    }
-
-    public virtual void AddStack(Status status, int count)
-    {
-        Stack += count;
-    }
-}
-
-public static class EffectTool
-{
-    public static Dictionary<EffectType, int> effectsDefaultDuration = new()
-    {
-        {EffectType.Poison, 3},
-        {EffectType.AddStr, 20}
-    };
-
-
-    public static Effect GetEffect(EffectType effectType, int duration)
-    {
-        return effectType switch
+        public Effect(int duration)
         {
-            EffectType.Poison => new PoisonEffect(duration),
-            EffectType.AddStr => new AddAtkEffect(duration),
-            _ => null,
+            Duration = duration;
+        }
+
+        public virtual bool Tick(Status status)
+        {
+            Duration--;
+            return Duration <= 0;
+        }
+
+        public virtual void AddStack(Status status, int count)
+        {
+            Stack += count;
+        }
+    }
+
+    public static class EffectTool
+    {
+        public static Dictionary<EffectType, int> effectsDefaultDuration = new()
+        {
+            {EffectType.Poison, 3},
+            {EffectType.AddStr, 20}
         };
+
+
+        public static Effect GetEffect(EffectType effectType, int duration)
+        {
+            return effectType switch
+            {
+                EffectType.Poison => new PoisonEffect(duration),
+                EffectType.AddStr => new AddAtkEffect(duration),
+                _ => null,
+            };
+        }
     }
 }
