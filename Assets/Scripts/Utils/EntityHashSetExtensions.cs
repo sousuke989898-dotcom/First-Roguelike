@@ -13,4 +13,16 @@ public static class EntityHashSetExtensions
         }
         return null;
     }
+
+    public static IHasStatus GetHasStatus(this HashSet<Entity> entities)
+    {
+        if (entities != null && entities.Count > 0)
+        {
+            foreach (Entity entity in entities)
+            {
+                if (entity is IHasStatus hasStatus) return hasStatus;
+            }
+        }
+        return null;
+    }
 }

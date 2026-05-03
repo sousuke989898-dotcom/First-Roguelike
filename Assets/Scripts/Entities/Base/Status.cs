@@ -17,6 +17,8 @@ public class Status
 
     public event Action<int,int> OnHpChanged;
 
+    public event Action<Unit> OnAttack;
+
     public Dictionary<EffectType, Effect> effects;
 
     public Status(int hp, IntRange atk, IntRange def)
@@ -95,7 +97,6 @@ public class Status
             }
         }
     }
-
 
 
 }

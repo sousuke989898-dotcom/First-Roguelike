@@ -61,7 +61,7 @@ public static class DirectionExtensions
         return result;
     }
 
-    public static Vector2Int GetVector(this Direction dir)
+    public static Vector2Int Vector(this Direction dir)
     {
         if (DirectionTool.DirectionVectors.TryGetValue(dir.ValidatedDir(), out var vec))
         {

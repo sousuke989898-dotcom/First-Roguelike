@@ -11,32 +11,26 @@ public class UnitManager : MonoBehaviour
     public static UnitManager Instance {get; private set;}
     public HashSet<Unit> Units {get; private set;} = new();
 
-    public HashSet<Unit> AttackingUnits {get; private set;} = new();
-    public HashSet<Unit> MovingUnits {get; private set;} = new();
+
+    public HashSet<Unit> ActingUnits {get; private set;} = new();
+    public HashSet<Unit> WillAttack{get; private set;} = new();
 
     [SerializeField] private Canvas healthBarCanvas;
 
 
     void Awake()
     {
-        Instance = this;
-        Units = new();
+        if (Instance == null) Instance = this;
+        else enabled = false;
     }
 
     /// <summary>
     /// ユニットのアニメーションが終了しているかを取得する
     /// </summary>
     /// <returns>true = 終了している,false = まだ終了していない</returns>
-    public bool AreAllUnitsIdle() //要検討(効率が悪い)
+    public bool AreAllUnitsIdle()
     {
-        foreach (Unit unit in Units)
-        {
-            if (unit.ActionState != UnitActionState.Idle)
-            {
-                return false;
-            }
-        }
-        return true;
+        return ActingUnits.Count == 0;
     }
 
     // public void StartAttack() //todo EnemyManagerのStartEnemyTurnの代わりに使う
@@ -63,30 +57,35 @@ public class UnitManager : MonoBehaviour
     /// <param name="unit"></param>
     public bool AddUnit(Unit unit)
     {
+        if (unit == null) return false;
         SetSlider(unit);
+        unit.OnStartAction +=  StartAction;
+        unit.OnEndAction   +=  EndAction;
         return Units.Add(unit);
     }
 
+
     public bool RemoveUnit(Unit unit)
     {
-        EndAnim(unit);
+        if (unit == null) return false;
+
+        // メモリリーク防止：登録したイベントを必ず解除する
+        unit.OnStartAction -= StartAction;
+        unit.OnEndAction   -= EndAction;
+
+        ActingUnits.Remove(unit);
         return Units.Remove(unit);
     }
 
-    /// <summary>
-    /// Unitが攻撃アニメーションを始めたときに呼び出す
-    /// </summary>
-    public bool OnStartAttack(Unit unit) => AttackingUnits.Add(unit);
+    private void StartAction(Unit unit)
+    {
+        ActingUnits.Add(unit);
+    }
 
-    /// <summary>
-    /// Unitが移動アニメーションを始めたときに呼び出す
-    /// </summary>
-    public bool OnStartMove(Unit unit) => MovingUnits.Add(unit);
-    
-    /// <summary>
-    /// Unitのアニメーションが終わったときに呼び出す
-    /// </summary>
-    public bool EndAnim(Unit unit) => MovingUnits.Remove(unit) || AttackingUnits.Remove(unit);
+    private void EndAction(Unit unit)
+    {
+        ActingUnits.Remove(unit);
+    }
 
     /// <summary>
     /// UnitにHPバーを追加する

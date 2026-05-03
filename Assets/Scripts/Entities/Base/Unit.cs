@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,7 +11,7 @@ using UnityEngine.UI;
 public enum UnitActionState {Idle, Sleep, Move, Attack, Dead, Destroy};
 
 
-public class Unit : Entity
+public class Unit : Entity, IHasStatus, IHasTakeTurn
 {
     public string Name {get; protected set;}
 
@@ -23,8 +25,13 @@ public class Unit : Entity
 
     public Vector2Int ActionDir {get; private set;} //(±1,±1)
 
+    public event Action<Unit> OnStartAction;
+    public event Action<Unit> OnEndAction;
+    public event Action<Unit> OnDead;
+
     public float AnimTimer {get; protected set;}
     public float MaxTime {get; protected set;}
+    public const float AnimTime = 0.1f;
 
     [SerializeField] protected SpriteRenderer spriteRenderer ;
 
@@ -35,97 +42,29 @@ public class Unit : Entity
         InitEntity(pos);
         Name = name;
         Status = new(hp, atk, new(0));
-
         ActionState = UnitActionState.Idle;
-        UnitManager.Instance.AddUnit(this);
+        UnitManager.Instance.AddUnit(this); //用変更
     }
 
+//-------アニメーション-------
 
-    void Update()
-    {
-        UpdateAnimation();
-    }
+    
 
-    protected virtual void UpdateAnimation()
-    {
-        if (ActionState == UnitActionState.Idle || ActionState == UnitActionState.Destroy) return;
-        AnimTimer -= Time.deltaTime;
-        float progress = (MaxTime != 0) ? 1 - (AnimTimer / MaxTime) : 0; // (0.0 ~ 1.0)
-
-        switch (ActionState)
-        {
-            case UnitActionState.Move:
-                MoveAnimation(progress);
-                break;
-            case UnitActionState.Attack:
-                AttackAnimation(progress);
-                break;
-            case UnitActionState.Dead:
-                DieAnimation(progress);
-                break;
-        }
-    }
-
-    protected void StartAnimation(float time, UnitActionState state)
-    {
-        MaxTime = time;
-        AnimTimer = time;
-        ActionState = state;
-    }
-
-    protected void EndAnimation()
+    protected void EndAnim()
     {
         ActionState = UnitActionState.Idle;
         SetTransform(Pos);
-        UnitManager.Instance.EndAnim(this);
+        OnEndAction?.Invoke(this);
     }
 
-    protected void MoveAnimation(float progress)
-    {
-        if (AnimTimer <= 0f)
-        {
-            EndAnimation();
-        }
-        else
-        {
-            SetTransform(OldPos + (((Vector2)ActionDir) * progress ));
-        }
-    }
 
-    protected void AttackAnimation(float progress)
-    {
-        if (AnimTimer <= 0f)
-        {
-            EndAnimation();
-        }
-        else
-        {
-            float weight = Mathf.Sin(progress * 180) * 0.2f;
-            SetTransform(Pos + (((Vector2)ActionDir) * weight));
-        }
-    }
 
-    protected void DieAnimation(float progress)
-    {
-        Color c = spriteRenderer.color;
-        if (AnimTimer <= 0f)
-        {
-            ActionState = UnitActionState.Destroy;
-            spriteRenderer.color = new Color(c.r, c.g, c.b, 0);
-            Destroy(gameObject);
-        }
-        else
-        {
-            spriteRenderer.color = new Color(c.r, c.g, c.b, 1-progress);
-        }
-    }
-
+//-------基本動作-------
 
     public virtual bool TakeTurn()
     {
         if (ActionState != UnitActionState.Idle) return false;
-
-        if (ActionReservation == null || ActionReservation.Count == 0) return false;
+        if (ActionReservation.Count == 0) return false;
 
         var targetPos = ActionReservation[0];
         ActionReservation.RemoveAt(0);
@@ -139,33 +78,35 @@ public class Unit : Entity
     }
 
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="targetPos"></param>
-    /// <returns></returns>
     protected bool Interact(Vector2Int targetPos)
     {
         ActionDir = targetPos - Pos;
+        HashSet<Entity> entities = MapManager.Instance.Data.GetEntities(targetPos);
+        IHasStatus target = entities.GetHasStatus();
 
-        var action = MapManager.Instance.Data.InteractCell(targetPos);
-        return action switch
+        if (target != null && targetPos != Pos /*自分自身*/)
         {
-            InteractType.Unit => AttackAction(targetPos),
-            InteractType.Move => MoveAction(targetPos),
-            _ => false,
-        };
+            return AttackAction(target);
+        }
+        else if (entities != null && entities.Count > 0)
+        {
+            //アイテムを使用など
+        }
+        else
+        {
+            return MoveAction(targetPos);
+        }
+        return false;
     }
 
-    public bool AttackAction(Vector2Int targetPos)
+    public bool AttackAction(IHasStatus target)
     {
-        Unit target = MapManager.Instance.Data.GetUnit(targetPos);
-        if (target == null) return false;
+        if (target == null) return false; // 自傷可
+        StartCoroutine(AttackAnimationCoroutine());
+        target.TakeDamage(Status);
+        OnEndAction?.Invoke(this);
+        // UnitManager.Instance.OnStartAttack(this);
 
-        StartAnimation(0.1f, UnitActionState.Attack);
-        Attack(target);
-
-        UnitManager.Instance.OnStartAttack(this);
         return true;
     }
 
@@ -173,24 +114,91 @@ public class Unit : Entity
     {
         if (SetPos(targetPos))
         {
-            StartAnimation(0.1f, UnitActionState.Move);
-            UnitManager.Instance.OnStartMove(this);
-
+            StartCoroutine(MoveAnimationCoroutine());
+            OnEndAction?.Invoke(this);
+            // StartAnimation(0.1f, UnitActionState.Move);
+            // UnitManager.Instance.OnStartMove(this);
             return true;
         }
         return false;
     }
 
+    private IEnumerator MoveAnimationCoroutine()
+    {
+        ActionState = UnitActionState.Move;
+        float elapsed = 0f;
+        float duration = AnimTime;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsed / duration);
+            SetTransform(Vector2.Lerp(OldPos, Pos, progress));
+            yield return null;
+        }
+        EndAnim();
+    }
+
+    private IEnumerator AttackAnimationCoroutine()
+    {
+        ActionState = UnitActionState.Attack;
+        float elapsed = 0f;
+        float duration = AnimTime;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsed / duration);
+            float weight = Mathf.Sin(progress * Mathf.PI) * 0.2f;
+            SetTransform(Pos + ((Vector2)ActionDir * weight));
+            yield return null;
+        }
+
+        EndAnim();
+    }
+
+    private IEnumerator DieAnimationCoroutine()
+    {
+        ActionState = UnitActionState.Dead;
+        float elapsed = 0f;
+        float duration = 1.0f;
+        Color c = spriteRenderer.color;
+
+
+        OnDead?.Invoke(this);
+        MapManager.Instance?.Data.RemoveEntity(this);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsed / duration);
+            spriteRenderer.color = new Color(c.r, c.g, c.b, 1.0f - progress);
+            yield return null;
+        }
+
+        ActionState = UnitActionState.Destroy;
+        Destroy(gameObject);
+    }
+
+
+    public int TakeDamage(Status attakerStatus)
+    {
+        int damage = Status.TakeDamage(attakerStatus);
+        if (Status.IsDead) Death();
+        return damage;
+    }
+
+//-------移動-------
+
     /// <summary>
     /// 行動リストに予定を追加する
     /// </summary>
-    /// <param name="targetAbsPos"></param>
+    /// <param name="AbsPos"></param>
     /// <returns></returns>
-    public bool GetPath(Vector2Int targetAbsPos) //絶対座標で動作する
+    public bool GetPath(Vector2Int AbsPos) //絶対座標で動作する
     {
         ActionReservation.Clear();
 
-        var poss = PathFinder.GetPath(Pos,targetAbsPos);
+        var poss = PathFinder.GetPath(Pos,AbsPos);
         if (poss.Count <= 0) return false;
 
         if (poss == null || poss.Count <= 0) return false;
@@ -201,16 +209,11 @@ public class Unit : Entity
 
     public void AddPath(Direction dir)
     {
-        Vector2Int vector = dir.GetVector();
+        Vector2Int vector = dir.Vector();
         Vector2Int lastPos;
-        if (ActionReservation.Count == 0)
-        {
-            lastPos = Pos;
-        }
-        else
-        {
-            lastPos = ActionReservation[^1];
-        }
+
+        if (ActionReservation.Count == 0) lastPos = Pos;
+        else lastPos = ActionReservation[^1]; //行動予約の最後
 
         Vector2Int targetPos = lastPos + vector;
         if (MapManager.Instance.Data.IsFloor(targetPos))
@@ -219,25 +222,21 @@ public class Unit : Entity
         }
     }
 
-
-    protected int Attack(Unit target) => target.TakeDamage(Status);
-
-    public int TakeDamage(Status attakerStatus)
+    public void ClearPath()
     {
-        int damage = Status.TakeDamage(attakerStatus);
-        if (Status.IsDead) Death();
-        return damage;
+        ActionReservation.Clear();
     }
 
 
     public void Death()
     {
         if (!Status.IsDead) return;
-        StartAnimation(1f, UnitActionState.Dead);
-
-        UnitManager.Instance.RemoveUnit(this);
-        MapManager.Instance.Data.RemoveEntity(this);
+        if (ActionState == UnitActionState.Dead) return;
+        StartCoroutine(DieAnimationCoroutine());
     }
+
+
+//-------UI-------
 
     public void SetHPSlider(Slider slider)
     {
