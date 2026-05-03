@@ -11,7 +11,12 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        Instance = this;
+        if (Instance != null) Instance = this;
+        else
+        {
+            enabled = false;
+            Debug.LogError($"{this}が複数存在しています。");
+        }
         CurrentPlayer = Instantiate(PlayerPrefab);
         // UnityEngine.Random.InitState(0);
     }

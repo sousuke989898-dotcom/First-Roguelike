@@ -10,7 +10,12 @@ public class EnemyManager : MonoBehaviour
 
     void Awake()
     {
-        Instance = this;
+        if (Instance != null) Instance = this;
+        else
+        {
+            enabled = false;
+            Debug.LogError($"{this}が複数存在しています。");
+        }
         Enemies = new();
     }
 

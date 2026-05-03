@@ -17,8 +17,12 @@ public class UnitManager : MonoBehaviour
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
-        else enabled = false;
+        if (Instance != null) Instance = this;
+        else
+        {
+            enabled = false;
+            Debug.LogError($"{this}が複数存在しています。");
+        }
     }
 
     /// <summary>

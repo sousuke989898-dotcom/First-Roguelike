@@ -6,7 +6,12 @@ public class TurnManager : MonoBehaviour
     public static TurnManager Instance;
     void Awake()
     {
-        Instance = this;
+        if (Instance != null) Instance = this;
+        else
+        {
+            enabled = false;
+            Debug.LogError($"{this}が複数存在しています。");
+        }
     }
 
 

@@ -29,7 +29,12 @@ public class MapManager : MonoBehaviour
     public static MapManager Instance {get; private set;}
     void Awake()
     {
-        Instance = this;
+        if (Instance != null) Instance = this;
+        else
+        {
+            enabled = false;
+            Debug.LogError($"{this}が複数存在しています。");
+        }
         Data = new();
         InitializeMap(InitSizeX,InitSizeY,MaxRoomCount,minSize);
     }
