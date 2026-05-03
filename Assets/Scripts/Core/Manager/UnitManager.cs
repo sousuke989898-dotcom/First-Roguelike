@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UnitManager : MonoBehaviour
+public class UnitManager : MonoBehaviour //削除予定
 {
 
     public static UnitManager Instance {get; private set;}

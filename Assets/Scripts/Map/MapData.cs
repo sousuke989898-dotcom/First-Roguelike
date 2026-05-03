@@ -13,13 +13,15 @@ public class MapData
     public Vector2Int upStairsPos;
     public Vector2Int downStairsPos;
 
-    private  HashSet<Entity>[,] _entityMap;
+    private HashSet<Entity>[,] _entityMap;
+    private HashSet<Entity> _entities;
 
 
     public void InitMapData(TileType[,] baseData)
     {
         Map = baseData;
         _entityMap = new HashSet<Entity>[Width,Height];
+        _entities = new();
 
         for (int x = 0; x < Width; x++)
         {
@@ -59,6 +61,7 @@ public class MapData
         entity.OnSetPosition -= EntitySetPosition;
         entity.OnSetPosition += EntitySetPosition;
         _entityMap[absPos.x, absPos.y].Add(entity);
+        _entities.Add(entity);
 
     }
 
@@ -72,6 +75,7 @@ public class MapData
     {
         if (!IsInsideMap(absPos)) return;
         _entityMap[absPos.x, absPos.y].Remove(entity);
+        _entities.Remove(entity);
     }
 
     public void RemoveEntity(Entity entity) => RemoveEntity(entity, entity.Pos);
@@ -79,14 +83,13 @@ public class MapData
     /// <summary>
     /// _entityMapに存在するEntityを更新する
     /// </summary>
-    public void MoveEntity(Entity entity, Vector2Int oldPos, Vector2Int newPos)
+    public void SetPosEntity(Entity entity, Vector2Int oldPos, Vector2Int newPos)
     {
         if (IsInsideMap(oldPos)) _entityMap[oldPos.x, oldPos.y].Remove(entity);
         if (IsInsideMap(newPos)) _entityMap[newPos.x, newPos.y].Add(entity);
     }
 
-    public void EntitySetPosition(Entity entity) => MoveEntity(entity, entity.OldPos, entity.Pos);
-
+    public void EntitySetPosition(Entity entity) => SetPosEntity(entity, entity.OldPos, entity.Pos);
 
 
     /// <summary>
