@@ -5,9 +5,6 @@ using UnityEngine.UI;
 public class UnitManager : MonoBehaviour
 {
 
-    // public Dictionary<Vector2Int,Unit> UnitsDic {get; private set;} = new();
-    // public Unit[,] UnitsMap {get; private set;}
-
     public static UnitManager Instance {get; private set;}
     public HashSet<Unit> Units {get; private set;} = new();
 
@@ -33,23 +30,6 @@ public class UnitManager : MonoBehaviour
         return ActingUnits.Count == 0;
     }
 
-    // public void StartAttack() //todo EnemyManagerのStartEnemyTurnの代わりに使う
-    // {
-    //     foreach(Unit unit in AttackingUnits)
-    //     {
-    //         if(unit is Player) return;
-    //         unit.Attack();
-    //     }
-    // }
-
-    // public void StartMove() //todo EnemyManagerのStartEnemyTurnの代わりに使う
-    // {
-    //     foreach(Unit unit in AttackingUnits)
-    //     {
-    //         if(unit is Player) return;
-    //         unit.Move();
-    //     }
-    // }
 
     /// <summary>
     /// List<Unit>への追加とHPバーの追加を行う
