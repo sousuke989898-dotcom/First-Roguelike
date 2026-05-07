@@ -17,7 +17,7 @@ public class UnitManager : MonoBehaviour //削除予定
 
     void Awake()
     {
-        if (Instance != null) Instance = this;
+        if (Instance == null) Instance = this;
         else
         {
             enabled = false;

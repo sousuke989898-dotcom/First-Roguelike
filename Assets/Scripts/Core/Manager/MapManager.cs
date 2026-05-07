@@ -29,7 +29,7 @@ public class MapManager : MonoBehaviour
     public static MapManager Instance {get; private set;}
     void Awake()
     {
-        if (Instance != null) Instance = this;
+        if (Instance == null) Instance = this;
         else
         {
             enabled = false;

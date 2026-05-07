@@ -13,8 +13,8 @@ public class MapData
     public Vector2Int upStairsPos;
     public Vector2Int downStairsPos;
 
-    private HashSet<Entity>[,] _entityMap;
-    private HashSet<Entity> _entities;
+    public HashSet<Entity>[,] _entityMap;
+    public HashSet<Entity> _entities;
 
 
     public void InitMapData(TileType[,] baseData)
@@ -87,7 +87,7 @@ public class MapData
     {
         if (IsInsideMap(oldPos)) _entityMap[oldPos.x, oldPos.y].Remove(entity);
         if (IsInsideMap(newPos)) _entityMap[newPos.x, newPos.y].Add(entity);
-    }
+    } // 必ずEntityの座標変更の後に呼び出す
 
     public void EntitySetPosition(Entity entity) => SetPosEntity(entity, entity.OldPos, entity.Pos);
 

@@ -10,7 +10,7 @@ public class EnemyManager : MonoBehaviour
 
     void Awake()
     {
-        if (Instance != null) Instance = this;
+        if (Instance == null) Instance = this;
         else
         {
             enabled = false;
@@ -47,13 +47,5 @@ public class EnemyManager : MonoBehaviour
     public void SpawnEnemy()
     {
         SpawnEnemy(MapManager.Instance.GetSpawnPos());
-    }
-
-    public void StartEnemyTurn()
-    {
-        foreach (Enemy enemy in Enemies)
-        {
-            enemy.TakeTurn();
-        }
     }
 }

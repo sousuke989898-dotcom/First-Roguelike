@@ -11,7 +11,7 @@ using UnityEngine.UI;
 public enum UnitActionState {Idle, Sleep, Move, Attack, Dead, Destroy};
 
 
-public class Unit : Entity, IHasStatus, IHasTakeTurn
+public class Unit : Entity, IHasStatus
 {
     public string Name {get; protected set;}
 
@@ -61,7 +61,10 @@ public class Unit : Entity, IHasStatus, IHasTakeTurn
 
 //-------基本動作-------
 
-    public virtual bool TakeTurn()
+    protected Vector2Int nextMovePos;
+    protected IHasStatus nextAttackTarget;
+
+    public virtual bool TakeTurn(List<Unit> planningToMoveUnits, List<Unit> planningToAttackUnits) //todo DicideActionで行動を決定し、TakeTurnは削除する
     {
         if (ActionState != UnitActionState.Idle) return false;
         if (ActionReservation.Count == 0) return false;
@@ -69,59 +72,87 @@ public class Unit : Entity, IHasStatus, IHasTakeTurn
         var targetPos = ActionReservation[0];
         ActionReservation.RemoveAt(0);
 
-        if (Interact(targetPos))
-        {
-            Status.OnTurnEnd();
-            return true;
-        }
-        return false;
+        DecideAction(targetPos, planningToMoveUnits, planningToAttackUnits);
+        return true;
     }
 
 
-    protected bool Interact(Vector2Int targetPos)
+    // protected virtual bool Interact(Vector2Int targetPos)
+    // {
+    //     ActionDir = targetPos - Pos;
+    //     HashSet<Entity> entities = MapManager.Instance.Data.GetEntities(targetPos);
+    //     IHasStatus target = entities.GetHasStatus();
+
+    //     if (target != null && targetPos != Pos /*自分自身*/)
+    //     {
+    //         return AttackAction(target);
+    //     }
+    //     else
+    //     {
+    //         return MoveAction(targetPos);
+    //     }
+    // }
+
+    protected virtual void DecideAction(Vector2Int targetPos, List<Unit> planningToMoveUnits, List<Unit> planningToAttackUnits)
     {
         ActionDir = targetPos - Pos;
         HashSet<Entity> entities = MapManager.Instance.Data.GetEntities(targetPos);
         IHasStatus target = entities.GetHasStatus();
 
-        if (target != null && targetPos != Pos /*自分自身*/)
+        if (target != null && targetPos != Pos /*自分自身は除外*/)
         {
-            return AttackAction(target);
-        }
-        else if (entities != null && entities.Count > 0)
-        {
-            //アイテムを使用など
+            nextAttackTarget = target;
+            planningToAttackUnits.Add(this);
         }
         else
         {
-            return MoveAction(targetPos);
+            nextMovePos = targetPos;
+            planningToMoveUnits.Add(this);
         }
-        return false;
     }
 
-    public bool AttackAction(IHasStatus target)
+    public virtual IEnumerator AttackCoroutine() //TurnMagerから呼び出す
     {
-        if (target == null) return false; // 自傷可
-        StartCoroutine(AttackAnimationCoroutine());
-        target.TakeDamage(Status);
+        if (nextAttackTarget == null) yield break; // 自傷可
+        nextAttackTarget.TakeDamage(Status); //todo 攻撃タイミングを攻撃アニメーションの半分が終わった時にする
+        nextAttackTarget = null;
+        yield return StartCoroutine(AttackAnimationCoroutine());
         OnEndAction?.Invoke(this);
-        // UnitManager.Instance.OnStartAttack(this);
-
-        return true;
     }
 
-    public bool MoveAction(Vector2Int targetPos)
+    public virtual IEnumerator MoveCoroutine() //TurnMagerから呼び出す
     {
-        if (SetPos(targetPos))
+        if (SetPos(nextMovePos))
         {
-            StartCoroutine(MoveAnimationCoroutine());
+            nextMovePos = Vector2Int.zero;
+            yield return StartCoroutine(MoveAnimationCoroutine());
             OnEndAction?.Invoke(this);
-            // StartAnimation(0.1f, UnitActionState.Move);
-            // UnitManager.Instance.OnStartMove(this);
-            return true;
         }
-        return false;
     }
+
+    // public bool AttackAction(IHasStatus target)
+    // {
+    //     if (target == null) return false; // 自傷可
+    //     StartCoroutine(AttackAnimationCoroutine());
+    //     target.TakeDamage(Status);
+    //     OnEndAction?.Invoke(this);
+    //     // UnitManager.Instance.OnStartAttack(this);
+
+    //     return true;
+    // }
+
+    // public bool MoveAction(Vector2Int targetPos)
+    // {
+    //     if (SetPos(targetPos))
+    //     {
+    //         StartCoroutine(MoveAnimationCoroutine());
+    //         OnEndAction?.Invoke(this);
+    //         // StartAnimation(0.1f, UnitActionState.Move);
+    //         // UnitManager.Instance.OnStartMove(this);
+    //         return true;
+    //     }
+    //     return false;
+    // }
 
     private IEnumerator MoveAnimationCoroutine()
     {
