@@ -18,7 +18,7 @@ public class Entity : MonoBehaviour
     public event Action<Entity> OnEndMove;
     public event Action<Entity> OnSetPosition;
 
-    public event Action<Entity> OnDestroyEntity;
+    public event Action<Entity> OnDisposeEntity;
 
 
     public virtual void InitEntity(Vector2Int pos)
@@ -74,10 +74,13 @@ public class Entity : MonoBehaviour
         transform.position = new(vector2.x + PositionOffSet,vector2.y + PositionOffSet,0);
     }
 
+    protected virtual void Dispose()
+    {
+        OnDisposeEntity?.Invoke(this);
+    }
+
     protected virtual void OnDestroy()
     {
-
-        OnDestroyEntity?.Invoke(this);
 
         OnSetPosition = null;
         OnStartMove = null;

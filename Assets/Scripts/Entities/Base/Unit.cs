@@ -71,6 +71,7 @@ public class Unit : Entity, IHasStatus
     {
         if (ActionState != UnitActionState.Idle) return false;
         if (ActionReservation.Count == 0) return false;
+
         var targetPos = ActionReservation[0];
         ActionReservation.RemoveAt(0);
 
@@ -153,10 +154,6 @@ public class Unit : Entity, IHasStatus
         float duration = 1.0f;
         Color c = spriteRenderer.color;
 
-
-        OnDead?.Invoke(this);
-        MapManager.Instance?.MapData.RemoveEntity(this);
-
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
@@ -175,6 +172,15 @@ public class Unit : Entity, IHasStatus
         int damage = Status.TakeDamage(attakerStatus);
         if (Status.IsDead) Death();
         return damage;
+    }
+
+    public void Death()
+    {
+        if (!Status.IsDead) return;
+        if (ActionState == UnitActionState.Dead) return;
+        OnDead?.Invoke(this);
+        base.Dispose();
+        StartCoroutine(DieAnimationCoroutine());
     }
 
 //-------移動-------
@@ -230,14 +236,6 @@ public class Unit : Entity, IHasStatus
     public void ClearPath()
     {
         ActionReservation.Clear();
-    }
-
-
-    public void Death()
-    {
-        if (!Status.IsDead) return;
-        if (ActionState == UnitActionState.Dead) return;
-        StartCoroutine(DieAnimationCoroutine());
     }
 
 
