@@ -17,6 +17,8 @@ public class Unit : Entity, IHasStatus
 
     public Status Status {get; protected set;}
 
+    public List<Item> Items {get; private set;} = new();
+
     /// <summary>アニメーション用</summary>
     public UnitActionState ActionState {get; protected set;}
 

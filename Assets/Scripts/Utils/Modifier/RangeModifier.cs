@@ -1,24 +1,23 @@
-public class RangeModifier : IModifier
+public class RangeModifier : Modifier
 {
     public IntRange Value;
 
-    public RangeModifier(IntRange Value)
+    public RangeModifier(IntRange Value, ModifierType Type)
     {
         this.Value = Value;
+        this.Type = Type;
     }
 
-    public RangeModifier(int min, int max)
+    public RangeModifier(int min, int max, ModifierType Type)
     {
         Value = new IntRange(min,max);
-    }
-    
-    public RangeModifier(int Value)
-    {
-        this.Value = new(Value);
+        this.Type = Type;
     }
 
-    public void Apply(ref IntRange flatValue, ref float magnification)
+    public RangeModifier(int Value, ModifierType Type)
     {
-        flatValue += Value;
+        this.Value = new IntRange(Value, Value);
+        this.Type = Type;
     }
+
 }

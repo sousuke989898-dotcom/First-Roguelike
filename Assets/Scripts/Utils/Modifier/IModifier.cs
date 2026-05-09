@@ -1,4 +1,13 @@
-public interface IModifier
+public abstract class Modifier
 {
-    public void Apply(ref IntRange flatValue, ref float magnification);
+    public ModifierType Type{get; protected set;}
+}
+
+
+public enum ModifierType
+{
+    None,
+    MaxHp,
+    Atk,
+    Def,
 }

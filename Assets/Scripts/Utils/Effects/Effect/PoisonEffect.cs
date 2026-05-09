@@ -3,12 +3,12 @@ namespace Game.Effect
     public class PoisonEffect : Effect
     {
         public override EffectType EffectType => EffectType.Poison;
-        public PoisonEffect(int duration) : base( duration) {}
+        public PoisonEffect(Status target, int duration) : base(target, duration) {}
 
-        public override bool Tick(Status status)
+        public override bool Tick()
         {
-            status.HurtHP(0.01f * Stack); // (1%) * stack
-            return base.Tick(status);
+            Target.HurtHP(0.01f * Stack); // (1%) * stack
+            return base.Tick();
         } //todo　マジックナンバーの解消
     }
 }

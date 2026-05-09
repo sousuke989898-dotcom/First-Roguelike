@@ -4,20 +4,17 @@ namespace Game.Effect
     {
         public override EffectType EffectType => EffectType.AddStr;
 
-        public AddAtkEffect(int duration) : base(duration)
+        public AddAtkEffect(Status target, int duration) : base(target, duration)
         {
             baseRange = ModEffectTool.GetModEffectsValue(EffectType);
-            Mod = new(baseRange);
-        } //todo　マジックナンバーの解消
-
-        public override void AddStack(Status status, int stack)
-        {
-            base.AddStack(status, stack);
-            status.Atk.SetSum();
+            Mod = new(baseRange, ModifierType.Atk);
         }
 
-        public override void OnApply(Status status) => status.Atk.AddMod(Mod);
-        public override void OnRemove(Status status) => status.Atk.RemoveMod(Mod);
+        public override void AddStack(int stack)
+        {
+            base.AddStack(stack);
+            Target.Atk.SetSum();
+        }
 
     }
 }

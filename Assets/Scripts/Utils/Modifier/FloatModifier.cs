@@ -1,14 +1,10 @@
-public class FloatModifier : IModifier
+public class FloatModifier : Modifier
 {
     public float Value;
 
-    public FloatModifier(float Value)
+    public FloatModifier(float Value, ModifierType Type)
     {
         this.Value = Value;
-    }
-
-    public void Apply(ref IntRange flatValue, ref float magnification)
-    {
-        magnification += Value;
+        this.Type = Type;
     }
 }

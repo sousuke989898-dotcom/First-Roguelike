@@ -1,4 +1,4 @@
 namespace Game.Effect
 {
-    public enum EffectType{Poison,AddStr}
+    public enum EffectType{Poison,Heal,AddStr}
 }

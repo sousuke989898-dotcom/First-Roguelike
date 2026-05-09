@@ -7,23 +7,23 @@ namespace Game.Effect
         public IntRange baseRange;
         public RangeModifier Mod {get; protected set;}
 
-        public ModEffect(int duration) : base(duration) {}
+        public ModEffect(Status target, int duration) : base(target, duration) {}
 
-        public override void AddStack(Status status, int stack) //継承時はオーバーライド必須
+        public override void AddStack(int stack)
         {
-            base.AddStack(status, stack);
+            base.AddStack(stack);
             Mod.Value += baseRange * stack;
         }
 
-        public abstract void  OnApply(Status status); //継承時はオーバーライド必須
-        public abstract void OnRemove(Status status); //継承時はオーバーライド必須
+        public void  OnApply(Status status) => status.AddModifier(Mod);
+        public void OnRemove(Status status) => status.RemoveModifier(Mod);
     }
 
     public static class ModEffectTool
     {
         public static Dictionary<EffectType, IntRange> modEffectsValue = new()
         {
-            {EffectType.AddStr, new(1,1)}
+            {EffectType.AddStr, new(1,1)} //todo　マジックナンバーの解消
         };
 
         public static IntRange GetModEffectsValue(EffectType type) =>

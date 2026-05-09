@@ -35,7 +35,7 @@ public class Status
         List<Effect> removeEffects = new();
         foreach (Effect effect in effects.Values)
         {
-            if (effect.Tick(this)) removeEffects.Add(effect);
+            if (effect.Tick()) removeEffects.Add(effect);
         }
 
         foreach (Effect effect in removeEffects)
@@ -85,11 +85,11 @@ public class Status
     {
         if (effects.ContainsKey(effectType))
         {
-            effects[effectType].AddStack(this, stack);
+            effects[effectType].AddStack(stack);
         }
         else
         {
-            Effect effect = EffectTool.GetEffect(effectType, 3);
+            Effect effect = EffectTool.GetEffect(effectType, this, 3);
             effects.Add(effectType, effect);
             if (effect is ModEffect modEffect)
             {
@@ -97,6 +97,24 @@ public class Status
             }
         }
     }
+
+    public void AddModifier(Modifier mod)
+    {
+        GetParam(mod.Type)?.AddMod(mod);
+    }
+
+    public void RemoveModifier(Modifier mod)
+    {
+        GetParam(mod.Type)?.RemoveMod(mod);
+    }
+
+    private Param GetParam(ModifierType type) => type switch
+    {
+        ModifierType.MaxHp => MaxHp,
+        ModifierType.Atk => Atk,
+        ModifierType.Def => Def,
+        _ => null
+    };
 
 
 }

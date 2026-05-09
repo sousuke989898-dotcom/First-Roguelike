@@ -4,7 +4,7 @@ public class Param
 {
     public IntRange BaseValue {get; private set;}
 
-    public List<IModifier> _Mods = new();
+    public List<Modifier> _Mods = new();
 
     public IntRange Sum;
 
@@ -20,14 +20,14 @@ public class Param
         SetSum();
     }
 
-    public void AddMod(IModifier modifier)
+    public void AddMod(Modifier modifier)
     {
         _Mods.Add(modifier);
         SetSum();
     }
     
 
-    public void RemoveMod(IModifier modifier)
+    public void RemoveMod(Modifier modifier)
     {
         _Mods.Remove(modifier);
         SetSum();
@@ -37,9 +37,16 @@ public class Param
     {
         IntRange flatValue = BaseValue;
         float magnification = 1.0f;
-        foreach (IModifier modifier in _Mods)
+        foreach (Modifier mod in _Mods)
         {
-            modifier.Apply(ref flatValue, ref magnification);
+            if (mod is RangeModifier rangeMod)
+            {
+                flatValue += rangeMod.Value;
+            }
+            else if (mod is FloatModifier floatMod)
+            {
+                magnification *= floatMod.Value;
+            }
         }
         Sum = flatValue * magnification;
     }
