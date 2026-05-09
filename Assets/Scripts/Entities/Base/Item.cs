@@ -11,7 +11,7 @@ public class Item : Entity
     public virtual void PickedUp(Unit unit)
     {
         unit.Items.Add(this);
-        base.OnDestroy();
+        base.Dispose();
         Destroy(gameObject);
     }
 
