@@ -8,7 +8,7 @@ public static class PathFinder
 
     public static List<Vector2Int> GetPath(Vector2Int start, Vector2Int end)
     {
-        if (!MapManager.Instance.Data.CanMove(end)) return null;
+        if (!MapManager.Instance.MapData.CanMove(end)) return null;
 
         Dictionary<Vector2Int, Node> openList = new();
         Dictionary<Vector2Int, Node> ClosedList = new();
@@ -45,7 +45,7 @@ public static class PathFinder
                 if (vector == Vector2Int.zero) continue;
                 Vector2Int pos = currentNode.Pos + vector;
 
-                if (!MapManager.Instance.Data.CanMove(pos) || ClosedList.ContainsKey(pos)) continue;
+                if (!MapManager.Instance.MapData.CanMove(pos) || ClosedList.ContainsKey(pos)) continue;
 
 
                 int newG = currentNode.G + 1;

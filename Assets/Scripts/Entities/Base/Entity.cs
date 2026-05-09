@@ -18,6 +18,8 @@ public class Entity : MonoBehaviour
     public event Action<Entity> OnEndMove;
     public event Action<Entity> OnSetPosition;
 
+    public event Action<Entity> OnDestroyEntity;
+
 
     public virtual void InitEntity(Vector2Int pos)
     {
@@ -25,7 +27,7 @@ public class Entity : MonoBehaviour
         OldPos = pos;
         SetTransform(pos);
 
-        MapManager.Instance.Data.AddEntity(this); //要検討
+        MapManager.Instance.MapData.AddEntity(this); //要検討
     }
 
 
@@ -36,7 +38,7 @@ public class Entity : MonoBehaviour
     /// <returns>移動成功なら真、失敗なら偽</returns>
     protected bool SetPos(Vector2Int absPos)
     {
-        if (MapManager.Instance.Data.CanMove(absPos))
+        if (MapManager.Instance.MapData.CanMove(absPos))
         {
             OldPos = Pos;
             Pos = absPos;
@@ -74,10 +76,8 @@ public class Entity : MonoBehaviour
 
     protected virtual void OnDestroy()
     {
-        if (MapManager.Instance != null && MapManager.Instance.Data != null)
-        {
-            MapManager.Instance.Data.RemoveEntity(this);
-        }
+
+        OnDestroyEntity?.Invoke(this);
 
         OnSetPosition = null;
         OnStartMove = null;

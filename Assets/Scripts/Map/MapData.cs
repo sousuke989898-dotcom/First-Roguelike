@@ -60,6 +60,9 @@ public class MapData
         }
         entity.OnSetPosition -= EntitySetPosition;
         entity.OnSetPosition += EntitySetPosition;
+
+        entity.OnDestroyEntity -= RemoveEntity;
+        entity.OnDestroyEntity += RemoveEntity;
         _entityMap[absPos.x, absPos.y].Add(entity);
         _entities.Add(entity);
 

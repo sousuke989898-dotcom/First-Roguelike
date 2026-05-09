@@ -73,7 +73,7 @@ public class Unit : Entity, IHasStatus
         ActionReservation.RemoveAt(0);
 
         ActionDir = targetPos - Pos;
-        HashSet<Entity> entities = MapManager.Instance.Data.GetEntities(targetPos);
+        HashSet<Entity> entities = MapManager.Instance.MapData.GetEntities(targetPos);
         IHasStatus target = entities.GetHasStatus();
 
         if (target != null && targetPos != Pos /*自分自身は除外*/)
@@ -153,7 +153,7 @@ public class Unit : Entity, IHasStatus
 
 
         OnDead?.Invoke(this);
-        MapManager.Instance?.Data.RemoveEntity(this);
+        MapManager.Instance?.MapData.RemoveEntity(this);
 
         while (elapsed < duration)
         {
@@ -204,7 +204,7 @@ public class Unit : Entity, IHasStatus
         else lastPos = ActionReservation[^1]; //行動予約の最後
 
         Vector2Int targetPos = lastPos + vector;
-        if (MapManager.Instance.Data.IsFloor(targetPos))
+        if (MapManager.Instance.MapData.IsFloor(targetPos))
         {
             ActionReservation.Add(targetPos);
         }
@@ -219,7 +219,7 @@ public class Unit : Entity, IHasStatus
 
         Vector2Int diff = AbsPos - lastPos;
         Vector2Int targetPos = lastPos + diff;
-        if (MapManager.Instance.Data.IsFloor(targetPos))
+        if (MapManager.Instance.MapData.IsFloor(targetPos))
         {
             ActionReservation.Add(targetPos);
         }

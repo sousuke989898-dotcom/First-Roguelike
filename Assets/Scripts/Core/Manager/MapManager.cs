@@ -21,10 +21,10 @@ public class MapManager : MonoBehaviour
     [SerializeField] private int minSize;
 
 
-    public MapData Data {get; private set;}
+    public MapData MapData {get; private set;}
 
-    public int SizeX => Data.Map.GetLength(0);
-    public int SizeY => Data.Map.GetLength(1);
+    public int SizeX => MapData.Map.GetLength(0);
+    public int SizeY => MapData.Map.GetLength(1);
 
     public static MapManager Instance {get; private set;}
     void Awake()
@@ -35,7 +35,7 @@ public class MapManager : MonoBehaviour
             enabled = false;
             Debug.LogError($"{this}が複数存在しています。");
         }
-        Data = new();
+        MapData = new();
         InitializeMap(InitSizeX,InitSizeY,MaxRoomCount,minSize);
     }
 
@@ -55,7 +55,7 @@ public class MapManager : MonoBehaviour
             for (int y = 0; y < SizeY; y++)
             {
                 Tile tile = null;
-                switch (Data.GetTileType(new(x,y)))
+                switch (MapData.GetTileType(new(x,y)))
                 {
                     case TileType.Wall:
                         tile = WallPrefab;
@@ -81,14 +81,14 @@ public class MapManager : MonoBehaviour
     public void InitializeMap(int sizeX, int sizeY, int maxRoomCount, int minSize)
     {
         TileType[,] terrain = MapGenerator.GenerateMap(sizeX,sizeY,maxRoomCount,minSize);
-        Data.InitMapData(terrain);
+        MapData.InitMapData(terrain);
 
         //Entity生成
     }
 
     public Vector2Int GetSpawnPos()
     {
-        List<Vector2Int> positions = Data.GetCanSpawnPositions();
+        List<Vector2Int> positions = MapData.GetCanSpawnPositions();
         return positions[Random.Range(0, positions.Count - 1)];
     }
 }
