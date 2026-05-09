@@ -64,37 +64,14 @@ public class Unit : Entity, IHasStatus
     protected Vector2Int nextMovePos;
     protected IHasStatus nextAttackTarget;
 
-    public virtual bool TakeTurn(List<Unit> planningToMoveUnits, List<Unit> planningToAttackUnits) //todo DicideActionで行動を決定し、TakeTurnは削除する
+
+    public virtual bool DecideAction(HashSet<Unit> planningToMoveUnits, HashSet<Unit> planningToAttackUnits)
     {
         if (ActionState != UnitActionState.Idle) return false;
         if (ActionReservation.Count == 0) return false;
-
         var targetPos = ActionReservation[0];
         ActionReservation.RemoveAt(0);
 
-        DecideAction(targetPos, planningToMoveUnits, planningToAttackUnits);
-        return true;
-    }
-
-
-    // protected virtual bool Interact(Vector2Int targetPos)
-    // {
-    //     ActionDir = targetPos - Pos;
-    //     HashSet<Entity> entities = MapManager.Instance.Data.GetEntities(targetPos);
-    //     IHasStatus target = entities.GetHasStatus();
-
-    //     if (target != null && targetPos != Pos /*自分自身*/)
-    //     {
-    //         return AttackAction(target);
-    //     }
-    //     else
-    //     {
-    //         return MoveAction(targetPos);
-    //     }
-    // }
-
-    protected virtual void DecideAction(Vector2Int targetPos, List<Unit> planningToMoveUnits, List<Unit> planningToAttackUnits)
-    {
         ActionDir = targetPos - Pos;
         HashSet<Entity> entities = MapManager.Instance.Data.GetEntities(targetPos);
         IHasStatus target = entities.GetHasStatus();
@@ -109,6 +86,7 @@ public class Unit : Entity, IHasStatus
             nextMovePos = targetPos;
             planningToMoveUnits.Add(this);
         }
+        return true;
     }
 
     public virtual IEnumerator AttackCoroutine() //TurnMagerから呼び出す
@@ -116,6 +94,7 @@ public class Unit : Entity, IHasStatus
         if (nextAttackTarget == null) yield break; // 自傷可
         nextAttackTarget.TakeDamage(Status); //todo 攻撃タイミングを攻撃アニメーションの半分が終わった時にする
         nextAttackTarget = null;
+        OnStartAction?.Invoke(this);
         yield return StartCoroutine(AttackAnimationCoroutine());
         OnEndAction?.Invoke(this);
     }
@@ -124,35 +103,13 @@ public class Unit : Entity, IHasStatus
     {
         if (SetPos(nextMovePos))
         {
+            OnStartAction?.Invoke(this);
             nextMovePos = Vector2Int.zero;
             yield return StartCoroutine(MoveAnimationCoroutine());
             OnEndAction?.Invoke(this);
         }
     }
 
-    // public bool AttackAction(IHasStatus target)
-    // {
-    //     if (target == null) return false; // 自傷可
-    //     StartCoroutine(AttackAnimationCoroutine());
-    //     target.TakeDamage(Status);
-    //     OnEndAction?.Invoke(this);
-    //     // UnitManager.Instance.OnStartAttack(this);
-
-    //     return true;
-    // }
-
-    // public bool MoveAction(Vector2Int targetPos)
-    // {
-    //     if (SetPos(targetPos))
-    //     {
-    //         StartCoroutine(MoveAnimationCoroutine());
-    //         OnEndAction?.Invoke(this);
-    //         // StartAnimation(0.1f, UnitActionState.Move);
-    //         // UnitManager.Instance.OnStartMove(this);
-    //         return true;
-    //     }
-    //     return false;
-    // }
 
     private IEnumerator MoveAnimationCoroutine()
     {
@@ -247,6 +204,21 @@ public class Unit : Entity, IHasStatus
         else lastPos = ActionReservation[^1]; //行動予約の最後
 
         Vector2Int targetPos = lastPos + vector;
+        if (MapManager.Instance.Data.IsFloor(targetPos))
+        {
+            ActionReservation.Add(targetPos);
+        }
+    }
+
+    public void AddPath(Vector2Int AbsPos)
+    {
+        Vector2Int lastPos;
+
+        if (ActionReservation.Count == 0) lastPos = Pos;
+        else lastPos = ActionReservation[^1]; //行動予約の最後
+
+        Vector2Int diff = AbsPos - lastPos;
+        Vector2Int targetPos = lastPos + diff;
         if (MapManager.Instance.Data.IsFloor(targetPos))
         {
             ActionReservation.Add(targetPos);

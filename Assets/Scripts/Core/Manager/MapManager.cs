@@ -81,7 +81,7 @@ public class MapManager : MonoBehaviour
     public void InitializeMap(int sizeX, int sizeY, int maxRoomCount, int minSize)
     {
         TileType[,] terrain = MapGenerator.GenerateMap(sizeX,sizeY,maxRoomCount,minSize);
-        Data.Map = terrain;
+        Data.InitMapData(terrain);
 
         //Entity生成
     }

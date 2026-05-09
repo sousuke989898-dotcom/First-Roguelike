@@ -2,15 +2,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 public class UnitManager : MonoBehaviour //削除予定
 {
 
     public static UnitManager Instance {get; private set;}
     public HashSet<Unit> Units {get; private set;} = new();
 
+    public HashSet<Unit> PlanningToMoveUnits {get; private set;} = new();
+    public HashSet<Unit> PlanningToAttackUnits {get; private set;} = new();
 
-    public HashSet<Unit> ActingUnits {get; private set;} = new();
-    public HashSet<Unit> WillAttack{get; private set;} = new();
 
     [SerializeField] private Canvas healthBarCanvas;
 
@@ -31,7 +32,7 @@ public class UnitManager : MonoBehaviour //削除予定
     /// <returns>true = 終了している,false = まだ終了していない</returns>
     public bool AreAllUnitsIdle()
     {
-        return ActingUnits.Count == 0;
+        return PlanningToMoveUnits.Count == 0 && PlanningToAttackUnits.Count == 0;
     }
 
 
@@ -57,18 +58,36 @@ public class UnitManager : MonoBehaviour //削除予定
         unit.OnStartAction -= StartAction;
         unit.OnEndAction   -= EndAction;
 
-        ActingUnits.Remove(unit);
         return Units.Remove(unit);
     }
 
     private void StartAction(Unit unit)
     {
-        ActingUnits.Add(unit);
+        if (unit.ActionState == UnitActionState.Move)
+        {
+            PlanningToMoveUnits.Add(unit);
+        }
+        else if (unit.ActionState == UnitActionState.Attack)
+        {
+            PlanningToAttackUnits.Add(unit);
+        }
     }
 
     private void EndAction(Unit unit)
     {
-        ActingUnits.Remove(unit);
+        PlanningToMoveUnits.Remove(unit);
+        PlanningToAttackUnits.Remove(unit);
+    }
+
+
+    private void OnDestroy()
+    {
+        // メモリリーク防止：全てのユニットからイベントを解除する
+        foreach (Unit unit in Units)
+        {
+            unit.OnStartAction -= StartAction;
+            unit.OnEndAction   -= EndAction;
+        }
     }
 
     /// <summary>

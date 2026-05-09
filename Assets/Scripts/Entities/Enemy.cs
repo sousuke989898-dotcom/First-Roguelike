@@ -18,21 +18,21 @@ public class Enemy : Unit
         EnemyManager.Instance.RemoveEnemy(this);
     }
 
-    public virtual void DecideAction(List<Unit> planningToMoveUnits, List<Unit> planningToAttackUnits)
-    {
-        Vector2Int diff = GetPlayerDiff();
-        Vector2Int targetPos = Pos;
-        base.DecideAction(targetPos, planningToMoveUnits, planningToAttackUnits);
-    }
-
-
-    public override bool TakeTurn(List<Unit> planningToMoveUnits, List<Unit> planningToAttackUnits)
+    public override bool DecideAction(HashSet<Unit> planningToMoveUnits, HashSet<Unit> planningToAttackUnits)
     {
         Vector2Int diff = GetPlayerDiff();
         AddPath(diff.GetDirection());
-
-        return base.TakeTurn(planningToMoveUnits, planningToAttackUnits);
+        return base.DecideAction(planningToMoveUnits, planningToAttackUnits);
     }
+
+
+    // public override bool TakeTurn(HashSet<Unit> planningToMoveUnits, HashSet<Unit> planningToAttackUnits)
+    // {
+    //     Vector2Int diff = GetPlayerDiff();
+    //     AddPath(diff.GetDirection());
+
+    //     return base.TakeTurn(planningToMoveUnits, planningToAttackUnits);
+    // }
 
     /// <summary>
     /// プレイヤーとの相対座標を取得する

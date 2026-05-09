@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
 
 public enum Turn {Player, Enemy}
 public class TurnManager : MonoBehaviour
@@ -15,55 +16,56 @@ public class TurnManager : MonoBehaviour
         }
     }
 
-    
-
 
     public Turn CurrentTurn {get; private set;} = Turn.Player;
 
-    public List<Unit> PlanningToMoveUnits {get; private set;} = new();
-    public List<Unit> PlanningToAttackUnits {get; private set;} = new();
+    public HashSet<Unit> PlanningToMoveUnits {get; private set;} = new();
+    public HashSet<Unit> PlanningToAttackUnits {get; private set;} = new();
+
+    private bool acted = false;
+
+
+    public IEnumerator StartTurnRoutine()
+    {
+        while (true)
+        {
+            if (CurrentTurn == Turn.Player)
+            {
+                yield return new WaitUntil(() => GameManager.Instance.CurrentPlayer.ActionReservation.Count > 0);
+                PlayerTakeTurn();
+            }
+            else
+            {
+                Debug.Log(CurrentTurn.ToString());
+                EnemeisTakeTurn();
+            }
+            acted = false;
+
+            if (UnitManager.Instance.AreAllUnitsIdle())
+            {
+                yield return StartCoroutine(StartUnitsMove(PlanningToMoveUnits));
+                yield return StartCoroutine(StartUnitsAttack(PlanningToAttackUnits));
+            }
+
+            if (acted)
+            {
+                Debug.Log(CurrentTurn.ToString());
+                EndTurn(CurrentTurn);
+            }
+            yield return null;
+        }
+    }
 
     void Update()
     {
-        if (CurrentTurn == Turn.Player)
-        {
-            if (StartPlayerTurn())
-            {
-                
-            }
-        }
-        else
-        {
-            if (StartEnemyTurn())
-            {
-                
-            }
-        }
-    }
-
-
-    public bool CanStartTurn(Turn turn)
-    {
-        return UnitManager.Instance.AreAllUnitsIdle() && CurrentTurn == turn;
-    }
-
-    private bool StartEnemyTurn()
-    {
-        if (CurrentTurn != Turn.Enemy) return false;
-        foreach(Unit unit in UnitManager.Instance.Units)
-        {
-            if (unit is Enemy enemy)
-            {
-                enemy.TakeTurn(PlanningToMoveUnits, PlanningToAttackUnits);
-            }
-        }
-        return true;
-    }
-
-    public bool StartPlayerTurn()
-    {
-        if (CurrentTurn != Turn.Player) return false;
-        return GameManager.Instance.CurrentPlayer.TakeTurn(PlanningToMoveUnits, PlanningToAttackUnits);
+        
+        // if (UnitManager.Instance.AreAllUnitsIdle())
+        // {
+        //     if (CurrentTurn == Turn.Player) EnemeisTakeTurn();
+        //     else PlayerTakeTurn();
+        //     StartCoroutine(StartUnitsMove(UnitManager.Instance.PlanningToMoveUnits));
+        //     StartCoroutine(StartUnitsAttack(UnitManager.Instance.PlanningToAttackUnits));
+        // }
     }
 
 
@@ -72,30 +74,44 @@ public class TurnManager : MonoBehaviour
         CurrentTurn = (turn == Turn.Enemy) ? Turn.Player : Turn.Enemy;
     }
 
-    // public void ChangeTurn() //削除予定
-    // {
-    //     if (CurrentTurn == Turn.Player) StartEnemyTurn();
-    //     else StartEnemyTurn();
-    // }
-
-
-    public void StartTurn()
+    public void EnemeisTakeTurn()
     {
-        //todo 移動と攻撃の命令をする
+        foreach(Unit unit in UnitManager.Instance.Units)
+        {
+            if (unit is Enemy enemy)
+            {
+                enemy.DecideAction(PlanningToMoveUnits,PlanningToAttackUnits);
+            }
+        }
     }
 
+    public void PlayerTakeTurn()
+    {
+        GameManager.Instance.CurrentPlayer.DecideAction(PlanningToMoveUnits,PlanningToAttackUnits);
+    }
 
-    // public void EndPlayerTurn()
-    // {
-    //     if (CurrentTurn != Turn.Player) return;
-    //     CurrentTurn = Turn.Enemy;
-    // }
+    public IEnumerator StartUnitsMove(HashSet<Unit> units)
+    {
+        if (units.Count == 0) yield break;
+        acted = true;
+        foreach (Unit unit in units)
+        {
+            StartCoroutine(unit.MoveCoroutine());
+        }
+        yield return new WaitUntil(() => UnitManager.Instance.AreAllUnitsIdle());
+    }
 
-    // public void EndEnemyTurn()
-    // {
-    //     if (CurrentTurn != Turn.Enemy) return;
-    //     CurrentTurn = Turn.Player;
-    // }
+    public IEnumerator StartUnitsAttack(HashSet<Unit> units)
+    {
+        if (units.Count == 0) yield break;
+        acted = true;
+        foreach (Unit unit in units)
+        {
+            StartCoroutine(unit.AttackCoroutine());
+        }
+        yield return new WaitUntil(() => UnitManager.Instance.AreAllUnitsIdle());
+    }
+
 
 
 }

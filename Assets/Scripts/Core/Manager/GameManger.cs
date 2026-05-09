@@ -26,6 +26,8 @@ public class GameManager : MonoBehaviour
         CurrentPlayer.InitPlayer(MapManager.Instance.GetSpawnPos());
         EnemyManager.Instance.SpawnEnemy();
 
+        TurnManager.Instance.StartCoroutine(TurnManager.Instance.StartTurnRoutine());
+
     }
 
 }
