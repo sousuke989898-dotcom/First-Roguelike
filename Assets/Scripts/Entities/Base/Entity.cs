@@ -79,9 +79,9 @@ public class Entity : MonoBehaviour
         OnDisposeEntity?.Invoke(this);
     }
 
-    protected virtual void OnDestroy()
+    protected virtual void OnDestroy() //メモリーリーク防止
     {
-
+        Dispose();
         OnSetPosition = null;
         OnStartMove = null;
         OnEndMove = null;
