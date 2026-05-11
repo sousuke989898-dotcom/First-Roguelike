@@ -35,6 +35,8 @@ public class Unit : Entity, IHasStatus
     public float MaxTime {get; protected set;}
     public const float AnimTime = 0.1f;
 
+    private UnitAnim unitAnim;
+
     [SerializeField] protected SpriteRenderer spriteRenderer ;
 
     protected Slider hpSlider;
@@ -45,18 +47,8 @@ public class Unit : Entity, IHasStatus
         Name = name;
         Status = new(hp, atk, new(0));
         ActionState = UnitActionState.Idle;
+        unitAnim = new UnitAnim(transform, spriteRenderer);
         UnitManager.Instance.AddUnit(this); //用変更
-    }
-
-//-------アニメーション-------
-
-    
-
-    protected void EndAnim()
-    {
-        ActionState = UnitActionState.Idle;
-        SetTransform(Pos);
-        OnEndAction?.Invoke(this);
     }
 
 
@@ -79,12 +71,13 @@ public class Unit : Entity, IHasStatus
         HashSet<Entity> entities = MapManager.Instance.MapData.GetEntities(targetPos);
         IHasStatus target = entities.GetHasStatus();
 
-        if (target != null && targetPos != Pos /*自分自身は除外*/)
+
+        if (target != null && targetPos != Pos /*自分自身は除外*/) //攻撃
         {
             nextAttackTarget = target;
             planningToAttackUnits.Add(this);
         }
-        else
+        else //移動
         {
             nextMovePos = targetPos;
             planningToMoveUnits.Add(this);
@@ -95,10 +88,14 @@ public class Unit : Entity, IHasStatus
     public virtual IEnumerator AttackCoroutine() //TurnMagerから呼び出す
     {
         if (nextAttackTarget == null) yield break; // 自傷可
+        ActionState = UnitActionState.Attack;
+        OnStartAction?.Invoke(this);
+
+
         nextAttackTarget.TakeDamage(Status); //todo 攻撃タイミングを攻撃アニメーションの半分が終わった時にする
         nextAttackTarget = null;
-        OnStartAction?.Invoke(this);
-        yield return StartCoroutine(AttackAnimationCoroutine());
+
+        yield return StartCoroutine(unitAnim.AttackAnimationCoroutine(OldPos, Pos + ActionDir));
         OnEndAction?.Invoke(this);
     }
 
@@ -106,64 +103,13 @@ public class Unit : Entity, IHasStatus
     {
         if (SetPos(nextMovePos))
         {
+            ActionState = UnitActionState.Move;
             OnStartAction?.Invoke(this);
+
             nextMovePos = Vector2Int.zero;
-            yield return StartCoroutine(MoveAnimationCoroutine());
+            yield return StartCoroutine(unitAnim.MoveAnimCoroutine(OldPos, Pos));
             OnEndAction?.Invoke(this);
         }
-    }
-
-
-    private IEnumerator MoveAnimationCoroutine()
-    {
-        ActionState = UnitActionState.Move;
-        float elapsed = 0f;
-        float duration = AnimTime;
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float progress = Mathf.Clamp01(elapsed / duration);
-            SetTransform(Vector2.Lerp(OldPos, Pos, progress));
-            yield return null;
-        }
-        EndAnim();
-    }
-
-    private IEnumerator AttackAnimationCoroutine()
-    {
-        ActionState = UnitActionState.Attack;
-        float elapsed = 0f;
-        float duration = AnimTime;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float progress = Mathf.Clamp01(elapsed / duration);
-            float weight = Mathf.Sin(progress * Mathf.PI) * 0.2f;
-            SetTransform(Pos + ((Vector2)ActionDir * weight));
-            yield return null;
-        }
-
-        EndAnim();
-    }
-
-    private IEnumerator DieAnimationCoroutine()
-    {
-        ActionState = UnitActionState.Dead;
-        float elapsed = 0f;
-        float duration = 1.0f;
-        Color c = spriteRenderer.color;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float progress = Mathf.Clamp01(elapsed / duration);
-            spriteRenderer.color = new Color(c.r, c.g, c.b, 1.0f - progress);
-            yield return null;
-        }
-
-        ActionState = UnitActionState.Destroy;
-        Destroy(gameObject);
     }
 
 
@@ -178,9 +124,11 @@ public class Unit : Entity, IHasStatus
     {
         if (!Status.IsDead) return;
         if (ActionState == UnitActionState.Dead) return;
+        ActionState = UnitActionState.Dead;
         OnDead?.Invoke(this);
         base.Dispose();
-        StartCoroutine(DieAnimationCoroutine());
+        StartCoroutine(unitAnim.DieAnimationCoroutine());
+        Destroy(gameObject, 1.0f); //アニメーションが終わった後にオブジェクトを破壊
     }
 
 //-------移動-------
