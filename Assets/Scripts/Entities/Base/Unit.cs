@@ -31,10 +31,6 @@ public class Unit : Entity, IHasStatus
     public event Action<Unit> OnEndAction;
     public event Action<Unit> OnDead;
 
-    public float AnimTimer {get; protected set;}
-    public float MaxTime {get; protected set;}
-    public const float AnimTime = 0.1f;
-
     private UnitAnim unitAnim;
 
     [SerializeField] protected SpriteRenderer spriteRenderer ;

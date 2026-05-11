@@ -2,16 +2,21 @@ namespace Game.Effect
 {
     using System.Collections.Generic;
 
-    public abstract class ModEffect : Effect
+    public abstract class ModEffect : StackableEffect
     {
         public IntRange baseRange;
         public RangeModifier Mod {get; protected set;}
 
-        public ModEffect(Status target, int duration) : base(target, duration) {}
-
-        public override void AddStack(int stack)
+        public ModEffect(int duration, int stack, Status status) : base(duration, stack)
         {
-            base.AddStack(stack);
+            OnApply(status);
+        }
+
+        public ModEffect(int duration, int stack) : base(duration, stack) {} //OnApplyを別で呼び出す必要あり
+
+        public override void AddStack(int duration, int stack)
+        {
+            base.AddStack(duration, stack);
             Mod.Value += baseRange * stack;
         }
 
