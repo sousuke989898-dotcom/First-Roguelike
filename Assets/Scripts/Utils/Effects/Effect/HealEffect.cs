@@ -1,16 +1,14 @@
 namespace Game.Effect
 {
-    public class HealEffect : StackableEffect
+    public class HealEffect : DefaultEffect
     {
-        public override EffectType EffectType => EffectType.Heal;
-        public override int maxDuration => EffectTool.effectsDefaultDuration[EffectType];
 
-        public HealEffect(int duration, int stack) : base(duration, stack) {}
+        public HealEffect(EffectData data) : base(data) {}
 
         public override bool Tick(Status status)
         {
-            status.HealHP(0.01f * Stack); // (1%) * stack
+            status.HealHP(Data.Power * Stack);
             return base.Tick(status);
-        } //todo　マジックナンバーの解消
+        }
     }
 }

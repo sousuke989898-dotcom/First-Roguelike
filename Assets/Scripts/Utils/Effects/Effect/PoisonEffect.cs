@@ -1,17 +1,15 @@
 namespace Game.Effect
 {
-    public class PoisonEffect : StackableEffect
+    public class PoisonEffect : DefaultEffect
     {
-        public override EffectType EffectType => EffectType.Poison;
-        public override int maxDuration => EffectTool.effectsDefaultDuration[EffectType];
 
-        public PoisonEffect(int duration, int stack) : base(duration, stack) {}
+        public PoisonEffect(EffectData effectData) : base(effectData) {}
 
         public override bool Tick(Status status)
         {
-            status.HurtHP(0.01f * Stack); // (1%) * stack
+            status.HurtHP(Data.Power * Stack);
             return base.Tick(status);
-        } //todo　マジックナンバーの解消
+        }
     }
 }
 

@@ -1,18 +1,26 @@
 namespace Game.Effect
 {
-    public abstract class StackableEffect : Effect
+    public interface IStackableEffect
     {
-        public virtual int Stack {get; protected set;}
+        public int Stack {get;}
+        public int MaxStack {get;}
 
-        public StackableEffect(int duration, int stack) : base(duration)
-        {
-            Stack = stack;
-        }
-
-        public virtual void AddStack(int duration, int stack)
-        {
-            Stack += stack;
-            Duration = EffectTool.effectsDefaultDuration[EffectType];
-        }
+        public void AddStack(int stack);
     }
+
+    public interface IModEffect
+    {
+        public RangeModifier Modifier {get;}
+        public void OnApply(Status status);
+        public void OnRemove(Status status);
+    }
+
+    public interface ITicableEffect
+    {
+        public int Duration {get;}
+
+
+        public bool Tick(Status status);
+    }
+
 }

@@ -1,14 +1,13 @@
 namespace Game.Effect
 {
-    public class AddAtkEffect : ModEffect
+    public class AddAtkEffect : DefaultModEffect
     {
-        public override EffectType EffectType => EffectType.AddStr;
-        public override int maxDuration => EffectTool.effectsDefaultDuration[EffectType];
+        public AddAtkEffect(EffectData data) : base(data) {}
 
-        public AddAtkEffect(int duration, int stack, Status status) : base(duration, stack, status)
+        public override void AddStack(int stack)
         {
-            baseRange = ModEffectTool.GetModEffectsValue(EffectType);
-            Mod = new(baseRange, ModifierType.Atk);
+            base.AddStack(stack);
+            Modifier.Value += Data.baseRange * stack;
         }
     }
 }

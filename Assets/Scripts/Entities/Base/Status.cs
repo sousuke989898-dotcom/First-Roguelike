@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Effect;
+using Game.Manager;
 
 public enum ParamType{MaxHP, Atk, Def}
 
@@ -35,17 +36,20 @@ public class Status
         List<Effect> removeEffects = new();
         foreach (Effect effect in effects.Values)
         {
-            if (effect.Tick()) removeEffects.Add(effect);
+            if (effect is ITicableEffect ticableEffect)
+            {
+                if (ticableEffect.Tick(this)) removeEffects.Add(effect);
+            }
         }
 
         foreach (Effect effect in removeEffects)
         {
-            if (effect is ModEffect modEffect)
+            if (effect is IModEffect modEffect)
             {
                 modEffect.OnRemove(this);
             }
 
-            effects.Remove(effect.EffectType);
+            effects.Remove(effect.Data.effectType);
         }
     }
 
@@ -83,18 +87,23 @@ public class Status
 
     public void ApplyEffect(EffectType effectType, int stack)
     {
+        
         if (effects.ContainsKey(effectType))
         {
-            effects[effectType].AddStack(stack);
+            if (effects[effectType] is IStackableEffect stackableEffect)
+            {
+                stackableEffect.AddStack(stack);
+            }
         }
         else
         {
-            Effect effect = EffectTool.GetEffect(effectType, this, 3);
-            effects.Add(effectType, effect);
-            if (effect is ModEffect modEffect)
+            EffectData data = DatabaseManager.Effects.Get(effectType);
+            Effect effect = EffectFactory.CreateEffect(data);
+            if (effect is IModEffect modEffect)
             {
                 modEffect.OnApply(this);
             }
+            effects.Add(data.effectType, effect);
         }
     }
 

@@ -1,16 +1,27 @@
 namespace Game.Effect
 {
-    using System.Collections.Generic;
 
     public abstract class Effect
     {
-        public abstract EffectType EffectType {get;}
-        public int Duration {get; protected set;}
-        public abstract int maxDuration{get;}
+        public EffectData Data {get; protected set;}
 
-        public Effect(int duration) 
+        public Effect(EffectData data)
         {
-            Duration = duration;
+            Data = data;
+        }
+    }
+
+    public abstract class DefaultEffect : Effect, ITicableEffect, IStackableEffect
+    {
+        public int Duration {get; protected set;}
+        public int Stack {get; protected set;}
+        public int MaxStack {get; protected set;}
+
+        public DefaultEffect(EffectData data) : base(data)
+        {
+            Duration = data.defaultDuration;
+            Stack = data.defaultStack;
+            MaxStack = data.defaultMaxStack;
         }
 
         public virtual bool Tick(Status status)
@@ -19,18 +30,11 @@ namespace Game.Effect
             return Duration <= 0;
         }
 
-    }
-
-    public static class EffectTool
-    {
-        public static Dictionary<EffectType, int> effectsDefaultDuration = new()
+        public virtual void AddStack(int stack)
         {
-            {EffectType.Poison, 5},
-            {EffectType.Heal, 5},
-            {EffectType.AddStr, 20}
-            
-        };
-
-
+            Stack = System.Math.Min(Stack + stack, MaxStack);
+            Duration = Data.defaultDuration; //スタックが増えると効果時間がリセット
+        }
     }
+
 }
