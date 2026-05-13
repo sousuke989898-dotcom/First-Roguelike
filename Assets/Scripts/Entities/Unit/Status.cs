@@ -31,6 +31,8 @@ public class Status
         InitHP(hp);
     }
 
+    //-----Effect-----
+
     public void OnTurnEnd()
     {
         List<Effect> removeEffects = new();
@@ -52,6 +54,30 @@ public class Status
             effects.Remove(effect.Data.effectType);
         }
     }
+
+    public void ApplyEffect(EffectType effectType, int stack)
+    {
+        
+        if (effects.ContainsKey(effectType))
+        {
+            if (effects[effectType] is IStackableEffect stackableEffect)
+            {
+                stackableEffect.AddStack(stack);
+            }
+        }
+        else
+        {
+            EffectData data = DatabaseManager.Effects.Get(effectType);
+            Effect effect = EffectFactory.CreateEffect(data);
+            if (effect is IModEffect modEffect)
+            {
+                modEffect.OnApply(this);
+            }
+            effects.Add(data.effectType, effect);
+        }
+    }
+
+    //-----HP-----
 
     public int DealDamage(Status target) => target.TakeDamage(this);
 
@@ -85,27 +111,7 @@ public class Status
         SetHP(amount);
     }
 
-    public void ApplyEffect(EffectType effectType, int stack)
-    {
-        
-        if (effects.ContainsKey(effectType))
-        {
-            if (effects[effectType] is IStackableEffect stackableEffect)
-            {
-                stackableEffect.AddStack(stack);
-            }
-        }
-        else
-        {
-            EffectData data = DatabaseManager.Effects.Get(effectType);
-            Effect effect = EffectFactory.CreateEffect(data);
-            if (effect is IModEffect modEffect)
-            {
-                modEffect.OnApply(this);
-            }
-            effects.Add(data.effectType, effect);
-        }
-    }
+    //-----Param-----
 
     public void AddModifier(Modifier mod)
     {
