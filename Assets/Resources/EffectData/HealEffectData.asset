@@ -12,13 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: HealEffectData
   m_EditorClassIdentifier: Assembly-CSharp:Game.Effect:EffectData
-  effectType: 0
+  effectType: 1
   defaultDuration: 5
   defaultStack: 1
+  defaultMaxStack: 10
   baseRange:
     min: 0
     max: 0
   modType: 0
   Power: 0.01
   icon: {fileID: 0}
-  effectName: 
+  effectName: Heal
+  description: 

@@ -12,4 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: EffectDataBase
   m_EditorClassIdentifier: Assembly-CSharp:Game.Effect:EffectDatabase
-  allEffects: []
+  allEffects:
+  - {fileID: 11400000, guid: f79cd69e7d2684e1181dbbdfdd494b42, type: 2}
+  - {fileID: 11400000, guid: 35c15dae5683b4d318a37459afab2c78, type: 2}
+  - {fileID: 11400000, guid: aa8f43bddc0ef49ddb4b09c1f493f572, type: 2}

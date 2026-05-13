@@ -15,10 +15,12 @@ MonoBehaviour:
   effectType: 0
   defaultDuration: 5
   defaultStack: 1
+  defaultMaxStack: 10
   baseRange:
     min: 0
     max: 0
   modType: 0
   Power: 0.01
   icon: {fileID: 0}
-  effectName: 
+  effectName: Poison
+  description: 
