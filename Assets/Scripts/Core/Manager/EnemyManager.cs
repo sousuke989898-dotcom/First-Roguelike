@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.Manager;
 using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
@@ -37,7 +38,8 @@ public class EnemyManager : MonoBehaviour
     public void SpawnEnemy(Vector2Int pos)
     {
         Enemy enemy = Instantiate(EnemyPrefab);
-        enemy.InitUnit(10,new(0,3),pos,"enemy");
+        UnitData unitData = DatabaseManager.Units.Get("Enemy");
+        enemy.InitUnit(unitData, pos);
         Enemies.Add(enemy);
     }
 

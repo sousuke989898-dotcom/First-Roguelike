@@ -681,6 +681,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Manager.DatabaseManager
   _effectDatabase: {fileID: 11400000, guid: 7d7a77569e075439993fa978876ce245, type: 2}
+  _unitDatabase: {fileID: 11400000, guid: 5e0386f01b0de4684b5c135e0dff1515, type: 2}
 --- !u!1 &1558642849
 GameObject:
   m_ObjectHideFlags: 0

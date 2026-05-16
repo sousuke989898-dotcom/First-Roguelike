@@ -103,6 +103,7 @@ public class Unit : Entity, IHasStatus
 
         yield return StartCoroutine(unitAnim.AttackAnimationCoroutine(OldPos, Pos + ActionDir));
         OnEndAction?.Invoke(this);
+        ActionState = UnitActionState.Idle;
     }
 
     public virtual IEnumerator MoveCoroutine() //TurnMagerから呼び出す
@@ -115,6 +116,7 @@ public class Unit : Entity, IHasStatus
             nextMovePos = Vector2Int.zero;
             yield return StartCoroutine(unitAnim.MoveAnimCoroutine(OldPos, Pos));
             OnEndAction?.Invoke(this);
+            ActionState = UnitActionState.Idle;
         }
     }
 

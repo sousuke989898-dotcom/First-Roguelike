@@ -1,3 +1,4 @@
+using Game.Manager;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -23,13 +24,13 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        CurrentPlayer.InitPlayer(MapManager.Instance.GetSpawnPos());
+        UnitData data = DatabaseManager.Units.Get("Player");
+        CurrentPlayer.InitUnit(data,MapManager.Instance.GetSpawnPos());
         EnemyManager.Instance.SpawnEnemy();
 
         TurnManager.Instance.StartCoroutine(TurnManager.Instance.StartTurnRoutine());
 
     }
-
 }
 
 

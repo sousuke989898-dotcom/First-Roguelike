@@ -6,9 +6,10 @@ public class Player : Unit
     [SerializeField] private int InitHP;
     [SerializeField] private IntRange atkRange;
 
-    public void InitPlayer(Vector2Int pos)
+    public override void InitUnit(UnitData data, Vector2Int pos)
     {
-        InitUnit(InitHP,atkRange,pos,"Player");
+        base.InitUnit(data, pos);
     }
+
 
 }

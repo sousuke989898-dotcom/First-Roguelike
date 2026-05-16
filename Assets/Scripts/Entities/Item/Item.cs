@@ -3,9 +3,9 @@ using Game.Effect;
 
 public class Item : Entity
 {
-    public void InitItem(Vector2Int pos)
+    public void InitItem(ItemData data, Vector2Int pos)
     {
-        base.InitEntity(pos);
+        base.InitEntity(data, pos);
     }
 
     public virtual void PickedUp(Unit unit)
@@ -19,7 +19,7 @@ public class Item : Entity
     {
         if (unit.Items.Remove(this))
         {
-            InitEntity(pos);
+            InitEntity(Data, pos);
         }
     }
 }
