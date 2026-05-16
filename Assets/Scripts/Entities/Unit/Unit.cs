@@ -37,14 +37,24 @@ public class Unit : Entity, IHasStatus
 
     protected Slider hpSlider;
 
-    public virtual void InitUnit(int hp, IntRange atk, Vector2Int pos, string name)
+    public virtual void InitUnit(int hp, IntRange atk, Vector2Int pos, string name) //todo 削除
     {
-        InitEntity(pos);
+        //InitEntity(pos);
         Name = name;
         Status = new(hp, atk, new(0));
         ActionState = UnitActionState.Idle;
         unitAnim = new UnitAnim(transform, spriteRenderer);
         UnitManager.Instance.AddUnit(this); //用変更
+    }
+
+    public virtual void InitUnit(UnitData data, Vector2Int pos)
+    {
+        InitEntity(data, pos);
+        Name = data.name;
+        Status = new(data.DefaultMaxHP, data.DefaultAtk, data.DefaultDef);
+        ActionState = UnitActionState.Idle;
+        unitAnim = new UnitAnim(transform, spriteRenderer);
+        UnitManager.Instance.AddUnit(this);
     }
 
 

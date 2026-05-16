@@ -9,13 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: PoisonEffectData
-  m_EditorClassIdentifier: Assembly-CSharp:Game.Effect:EffectData
+  m_Script: {fileID: 11500000, guid: 34be04fd356b24086ad861373882e854, type: 3}
+  m_Name: Poison
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Effect.EffectData
   effectType: 0
   defaultDuration: 5
   defaultStack: 1
-  defaultMaxStack: 10
+  defaultMaxStack: 20
   baseRange:
     min: 0
     max: 0

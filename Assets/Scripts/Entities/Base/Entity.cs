@@ -8,6 +8,8 @@ public class Entity : MonoBehaviour
 {
     public const float PositionOffSet = 0.5f;
 
+    public EntityData Data {get; protected set;}
+
     /// <summary>
     /// Entityの絶対座標
     /// </summary>
@@ -21,8 +23,9 @@ public class Entity : MonoBehaviour
     public event Action<Entity> OnDisposeEntity;
 
 
-    public virtual void InitEntity(Vector2Int pos)
+    public virtual void InitEntity(EntityData data, Vector2Int pos)
     {
+        Data = data;
         Pos = pos;
         OldPos = pos;
         SetTransform(pos);

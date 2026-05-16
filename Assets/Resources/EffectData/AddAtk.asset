@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: AddAtkEffectData
-  m_EditorClassIdentifier: Assembly-CSharp:Game.Effect:EffectData
+  m_Script: {fileID: 11500000, guid: 34be04fd356b24086ad861373882e854, type: 3}
+  m_Name: AddAtk
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Effect.EffectData
   effectType: 2
-  defaultDuration: 20
+  defaultDuration: 30
   defaultStack: 1
   defaultMaxStack: 10
   baseRange:
@@ -23,4 +23,4 @@ MonoBehaviour:
   Power: 0
   icon: {fileID: 0}
   effectName: AddAtk
-  description: "\u653B\u6483\u529B\u30921\u4E0A\u3052\u308BEffect"
+  description: 

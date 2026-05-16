@@ -6,8 +6,10 @@ namespace Game.Manager //順次Managerクラスをここに移動していく
     public class DatabaseManager : MonoBehaviour
     {
         [SerializeField] private EffectDatabase _effectDatabase;
+        [SerializeField] private UnitDataBase _unitDatabase;
 
         public static EffectDatabase Effects => Instance._effectDatabase;
+        public static UnitDataBase Units => Instance._unitDatabase;
 
         public static DatabaseManager Instance { get; private set; }
 
