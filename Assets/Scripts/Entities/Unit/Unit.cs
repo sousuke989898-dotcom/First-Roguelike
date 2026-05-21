@@ -95,8 +95,6 @@ public class Unit : Entity, IHasStatus
 
     public virtual IEnumerator MoveCoroutine(Vector2Int targetPos)
     {
-        Debug.Log(targetPos);
-
         if (SetPos(targetPos))
         {
             ActionState = UnitActionState.Move;

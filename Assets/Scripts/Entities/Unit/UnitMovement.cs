@@ -18,14 +18,13 @@ public class UnitMovement
     /// </summary>
     /// <param name="AbsPos"></param>
     /// <returns></returns>
-    public bool GetPath(Vector2Int AbsPos)
+    public bool SetPath(Vector2Int AbsPos)
     {
         ClearPath();
 
-        var poss = PathFinder.GetPath(_owner.Pos, AbsPos);
-        if (poss.Count <= 0) return false;
+        List<Vector2Int> poss = PathFinder.GetPath(_owner.Pos, AbsPos);
 
-        if (poss == null || poss.Count <= 0) return false;
+        if (poss == null || poss.Count == 0) return false;
 
         ActionReservation.AddRange(poss);
         return true;

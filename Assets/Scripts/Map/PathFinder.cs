@@ -7,14 +7,14 @@ public static class PathFinder
 
     public static List<Vector2Int> GetPath(Vector2Int start, Vector2Int end)
     {
-        if (!MapManager.Instance.MapData.CanMove(end)) return null;
+        if (!MapManager.Instance.MapData.IsFloor(end)) return null;
 
         Dictionary<Vector2Int, Node> openList = new();
         Dictionary<Vector2Int, Node> ClosedList = new();
         //List<Node> ClosedList = new();
 
         Node startNode = new(start);
-        startNode.SetCost(0, start.GetDistance(end));
+        startNode.SetCost(0, Vector2IntExtensions.GetDistance(start,end));
         openList.Add(start,startNode);
 
         while (openList.Count > 0)
@@ -44,7 +44,7 @@ public static class PathFinder
                 if (vector == Vector2Int.zero) continue;
                 Vector2Int pos = currentNode.Pos + vector;
 
-                if (!MapManager.Instance.MapData.CanMove(pos) || ClosedList.ContainsKey(pos)) continue;
+                if (!MapManager.Instance.MapData.IsFloor(pos) || ClosedList.ContainsKey(pos)) continue;
 
 
                 float newG = currentNode.G + 1;
@@ -53,19 +53,17 @@ public static class PathFinder
 
                 if (openNode == null)
                 {
-                    // まだリストにないなら新規作成
                     Node newNode = new(pos)
                     {
-                        parent = currentNode // ここで親を記録！
+                        parent = currentNode 
                     };
-                    newNode.SetCost(newG, pos.GetDistance(end));
+                    newNode.SetCost(newG, Vector2IntExtensions.GetDistance(pos,end));
                     openList.Add(pos,newNode);
                 }
                 else if (newG < openNode.G)
                 {
-                    // すでにあるが、今のルートの方が近いなら更新
                     openNode.G = newG;
-                    openNode.parent = currentNode; // 親を今のノードに差し替え
+                    openNode.parent = currentNode;
                 }
 
             }

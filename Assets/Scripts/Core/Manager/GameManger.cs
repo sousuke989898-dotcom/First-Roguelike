@@ -32,6 +32,19 @@ public class GameManager : MonoBehaviour
         EnemyManager.Instance.SpawnEnemy();
 
         TurnManager.Instance.StartCoroutine(TurnManager.Instance.StartRoutine());
+
+        // Vector2Int start = MapManager.Instance.GetSpawnPos();
+        // Vector2Int end = MapManager.Instance.GetSpawnPos();
+        // var path = PathFinder.GetPath(start, end);
+        // if (path != null)
+        // {
+        //     string pathString = string.Join(", ", path);
+        //     Debug.Log($"Start: {start} End: {end} / ルート成功: [{pathString}]");
+        // }
+        // else
+        // {
+        //     Debug.Log($"Start: {start} End: {end} / ルートが見つかりませんでした");
+        // }
     }
 }
 

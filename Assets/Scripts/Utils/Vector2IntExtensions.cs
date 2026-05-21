@@ -28,7 +28,7 @@ public static class Vector2IntExtensions
         return Mathf.Sqrt(dx * dx + dy * dy);
     }
 
-    public static int GetChebyshevDistance(Vector2Int a, Vector2Int b)
+    public static int GetChebyshevDistance(this Vector2Int a, Vector2Int b)
     {
         int dx = Mathf.Abs(a.x - b.x);
         int dy = Mathf.Abs(a.y - b.y);
