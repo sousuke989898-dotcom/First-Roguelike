@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Game.UnitSystem.UnitCommand;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -28,24 +29,20 @@ public class Unit : Entity, IHasStatus
     public Vector2Int ActionDir {get; private set;} //(±1,±1)
 
     public event Action<Unit> OnStartAction;
-    public event Action<Unit> OnEndAction;
     public event Action<Unit> OnDead;
 
     private UnitAnim unitAnim;
+
+    public UnitMovement unitMovement {get; protected set;}
+
+    public bool IsPlaningAction => unitMovement.ActionReservation.Count > 0; //todo 名前の
+
+
 
     [SerializeField] protected SpriteRenderer spriteRenderer ;
 
     protected Slider hpSlider;
 
-    public virtual void InitUnit(int hp, IntRange atk, Vector2Int pos, string name) //todo 削除
-    {
-        //InitEntity(pos);
-        Name = name;
-        Status = new(hp, atk, new(0));
-        ActionState = UnitActionState.Idle;
-        unitAnim = new UnitAnim(transform, spriteRenderer);
-        UnitManager.Instance.AddUnit(this); //用変更
-    }
 
     public virtual void InitUnit(UnitData data, Vector2Int pos)
     {
@@ -54,15 +51,13 @@ public class Unit : Entity, IHasStatus
         Status = new(data.DefaultMaxHP, data.DefaultAtk, data.DefaultDef);
         ActionState = UnitActionState.Idle;
         unitAnim = new UnitAnim(transform, spriteRenderer);
+        unitMovement = new(this);
         UnitManager.Instance.AddUnit(this);
     }
 
 
 
 //-------基本動作-------
-
-    protected Vector2Int nextMovePos;
-    protected IHasStatus nextAttackTarget;
 
 
     public virtual bool DecideAction(HashSet<Unit> planningToMoveUnits, HashSet<Unit> planningToAttackUnits)
@@ -80,46 +75,71 @@ public class Unit : Entity, IHasStatus
 
         if (target != null && targetPos != Pos /*自分自身は除外*/) //攻撃
         {
-            nextAttackTarget = target;
             planningToAttackUnits.Add(this);
         }
         else //移動
         {
-            nextMovePos = targetPos;
             planningToMoveUnits.Add(this);
         }
         return true;
     }
 
-    public virtual IEnumerator AttackCoroutine() //TurnMagerから呼び出す
+    public virtual UnitCommand DicideAction()
     {
-        if (nextAttackTarget == null) yield break; // 自傷可
-        ActionState = UnitActionState.Attack;
-        OnStartAction?.Invoke(this);
+        if (ActionState != UnitActionState.Idle || !unitMovement.PlanningAction) return null;
+        
+        Vector2Int targetPos = unitMovement.GetNextPos();
+        
+        HashSet<Entity> entities = MapManager.Instance.MapData.GetEntities(targetPos);
+        Unit target = entities.GetUnit();
 
-
-        nextAttackTarget.TakeDamage(Status); //todo 攻撃タイミングを攻撃アニメーションの半分が終わった時にする
-        nextAttackTarget = null;
-
-        yield return StartCoroutine(unitAnim.AttackAnimationCoroutine(OldPos, Pos + ActionDir));
-        OnEndAction?.Invoke(this);
-        ActionState = UnitActionState.Idle;
-    }
-
-    public virtual IEnumerator MoveCoroutine() //TurnMagerから呼び出す
-    {
-        if (SetPos(nextMovePos))
+        if (target != null)
         {
-            ActionState = UnitActionState.Move;
-            OnStartAction?.Invoke(this);
-
-            nextMovePos = Vector2Int.zero;
-            yield return StartCoroutine(unitAnim.MoveAnimCoroutine(OldPos, Pos));
-            OnEndAction?.Invoke(this);
-            ActionState = UnitActionState.Idle;
+            return new AttackCommand(this, target);
+        }
+        else
+        {
+            return new MoveCommand(this, targetPos);
         }
     }
 
+
+    public virtual IEnumerator AttackCoroutine(Unit target)
+    {
+        Debug.Log(target);
+
+        if (target != null && !target.Status.IsDead)
+        {
+
+            ActionState = UnitActionState.Attack;
+            target.TakeDamage(Status);
+            yield return StartCoroutine(unitAnim.AttackAnimationCoroutine(Pos, target.Pos));
+            ActionState = UnitActionState.Idle;
+        }
+        else
+        {
+            //移動処理に移行？
+        }
+    }
+
+    public virtual IEnumerator MoveCoroutine(Vector2Int targetPos)
+    {
+        Debug.Log(targetPos);
+
+        if (SetPos(targetPos))
+        {
+            ActionState = UnitActionState.Move;
+            yield return StartCoroutine(unitAnim.MoveAnimCoroutine(OldPos, Pos));
+            ActionState = UnitActionState.Idle;
+            
+        }
+        else
+        {
+            //todo ターン開始時に空いていたところにUnitがいるということなので、敵味方判別をした後に攻撃するか別の位置に移動するかを決める
+        }
+    }
+
+    //-----体力関係-----
 
     public int TakeDamage(Status attakerStatus)
     {
@@ -128,70 +148,14 @@ public class Unit : Entity, IHasStatus
         return damage;
     }
 
-    public void Death()
+    private void Death()
     {
-        if (!Status.IsDead) return;
-        if (ActionState == UnitActionState.Dead) return;
+        if (!Status.IsDead || ActionState == UnitActionState.Dead) return;
         ActionState = UnitActionState.Dead;
         OnDead?.Invoke(this);
         base.Dispose();
         StartCoroutine(unitAnim.DieAnimationCoroutine());
         Destroy(gameObject, 1.0f); //アニメーションが終わった後にオブジェクトを破壊
-    }
-
-//-------移動-------
-
-    /// <summary>
-    /// 行動リストに予定を追加する
-    /// </summary>
-    /// <param name="AbsPos"></param>
-    /// <returns></returns>
-    public bool GetPath(Vector2Int AbsPos) //絶対座標で動作する
-    {
-        ActionReservation.Clear();
-
-        var poss = PathFinder.GetPath(Pos,AbsPos);
-        if (poss.Count <= 0) return false;
-
-        if (poss == null || poss.Count <= 0) return false;
-
-        ActionReservation.AddRange(poss);
-        return true;
-    }
-
-    public void AddPath(Direction dir)
-    {
-        Vector2Int vector = dir.Vector();
-        Vector2Int lastPos;
-
-        if (ActionReservation.Count == 0) lastPos = Pos;
-        else lastPos = ActionReservation[^1]; //行動予約の最後
-
-        Vector2Int targetPos = lastPos + vector;
-        if (MapManager.Instance.MapData.IsFloor(targetPos))
-        {
-            ActionReservation.Add(targetPos);
-        }
-    }
-
-    public void AddPath(Vector2Int AbsPos)
-    {
-        Vector2Int lastPos;
-
-        if (ActionReservation.Count == 0) lastPos = Pos;
-        else lastPos = ActionReservation[^1]; //行動予約の最後
-
-        Vector2Int diff = AbsPos - lastPos;
-        Vector2Int targetPos = lastPos + diff;
-        if (MapManager.Instance.MapData.IsFloor(targetPos))
-        {
-            ActionReservation.Add(targetPos);
-        }
-    }
-
-    public void ClearPath()
-    {
-        ActionReservation.Clear();
     }
 
 

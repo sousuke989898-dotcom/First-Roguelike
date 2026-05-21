@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 
 public class KeyManager : MonoBehaviour
@@ -37,6 +38,18 @@ public class KeyManager : MonoBehaviour
         {new(KeyCode.UpArrow,KeyCode.LeftArrow), InputCommand.UpLeft},
     };
 
+    public static KeyManager Instance;
+
+    void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else
+        {
+            enabled = false;
+            Debug.LogError($"{this}が複数存在しています。");
+        }
+    }
+
     public void Update()
     {
         if (lastCombo.GetStatus() != ComboStatus.None) return;
@@ -51,6 +64,24 @@ public class KeyManager : MonoBehaviour
 
         return;
     }
+
+    // public IEnumerator StartRoutine() // 処理が遅くなってしまったので、Updateに戻す
+    // {
+    //     while (true)
+    //     {
+    //         yield return new WaitUntil(() => lastCombo.GetStatus() == ComboStatus.None);
+    //         lastCombo = KeyCombo.None;
+
+    //         inputBufferTimer -= Time.deltaTime;
+    //         InputCommand command = GetCommand();
+    //         if (command != InputCommand.None)
+    //         {
+    //             ExecuteCommand(command);
+    //         }
+
+    //         yield return null;
+    //     }
+    // }
 
     private InputCommand GetCommand()
     {
@@ -103,9 +134,9 @@ public class KeyManager : MonoBehaviour
     {
         if (InputCommandTool.keyMovements.TryGetValue(command,out var dir))
         {
-            Player player = GameManager.Instance.CurrentPlayer;
+            Player player = GameManager.Player;
             if (player == null) return false;
-            player.AddPath(dir);
+            player.unitMovement.AddPath(dir);
             return true;
         }
         return false;

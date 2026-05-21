@@ -6,10 +6,16 @@ public class Enemy : Unit
 {
     public EnemyMoveState EnemyState {get; protected set;}
 
-    public override void InitUnit(int hp, IntRange atkRange, Vector2Int pos, string name)
+    // public override void InitUnit(int hp, IntRange atkRange, Vector2Int pos, string name)
+    // {
+    //     base.InitUnit(hp,atkRange,pos,name);
+    //     EnemyState = EnemyMoveState.Chase;//試験用
+    // }
+
+    public override void InitUnit(UnitData data, Vector2Int pos)
     {
-        base.InitUnit(hp,atkRange,pos,name);
-        EnemyState = EnemyMoveState.Chase;//試験用
+        base.InitUnit(data, pos);
+        EnemyState = EnemyMoveState.Chase;
     }
 
     protected override void OnDestroy()
@@ -21,7 +27,7 @@ public class Enemy : Unit
     public override bool DecideAction(HashSet<Unit> planningToMoveUnits, HashSet<Unit> planningToAttackUnits)
     {
         Vector2Int diff = GetPlayerDiff();
-        AddPath(diff.GetDirection());
+        unitMovement.AddPath(diff.GetDirection());
         return base.DecideAction(planningToMoveUnits, planningToAttackUnits);
     }
 
@@ -40,7 +46,7 @@ public class Enemy : Unit
     /// <returns></returns>
     public Vector2Int GetPlayerDiff()
     {
-        Player p = GameManager.Instance.CurrentPlayer;
+        Player p = GameManager.Player;
         if (p == null) return Vector2Int.zero;
         return p.Pos - Pos;
     }

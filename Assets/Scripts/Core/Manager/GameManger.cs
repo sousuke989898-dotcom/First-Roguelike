@@ -7,7 +7,10 @@ public class GameManager : MonoBehaviour
 
     public static GameManager Instance {get; private set;}
 
-    public Player CurrentPlayer {get; private set;}
+    private Player _player;
+
+    public static Player Player => Instance._player;
+
 
 
     void Awake()
@@ -18,18 +21,17 @@ public class GameManager : MonoBehaviour
             enabled = false;
             Debug.LogError($"{this}が複数存在しています。");
         }
-        CurrentPlayer = Instantiate(PlayerPrefab);
+        _player = Instantiate(PlayerPrefab);
         // UnityEngine.Random.InitState(0);
     }
 
     void Start()
     {
         UnitData data = DatabaseManager.Units.Get("Player");
-        CurrentPlayer.InitUnit(data,MapManager.Instance.GetSpawnPos());
+        Player.InitUnit(data,MapManager.Instance.GetSpawnPos());
         EnemyManager.Instance.SpawnEnemy();
 
-        TurnManager.Instance.StartCoroutine(TurnManager.Instance.StartTurnRoutine());
-
+        TurnManager.Instance.StartCoroutine(TurnManager.Instance.StartRoutine());
     }
 }
 

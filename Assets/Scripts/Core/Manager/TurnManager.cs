@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using Game.UnitSystem.UnitCommand;
 
 public enum Turn {Player, Enemy}
 public class TurnManager : MonoBehaviour
@@ -19,95 +20,51 @@ public class TurnManager : MonoBehaviour
 
     public Turn CurrentTurn {get; private set;} = Turn.Player;
 
-    private HashSet<Unit> _activeMovingUnits = new();
-    private HashSet<Unit> _activeAttackingUnits = new();
 
-    public HashSet<Unit> PlanningToMoveUnits {get; private set;} = new();
-    public HashSet<Unit> PlanningToAttackUnits {get; private set;} = new();
-
-
-    public IEnumerator StartTurnRoutine()
+    public IEnumerator StartRoutine()
     {
         while (true)
         {
-            HashSet<Unit> planningToMoveUnits = new();
-            HashSet<Unit> planningToAttackUnits = new();
-
+            List<UnitCommand> unitCommands = new();
             if (CurrentTurn == Turn.Player)
             {
-                yield return new WaitUntil(() => GameManager.Instance.CurrentPlayer.ActionReservation.Count > 0);
-                GameManager.Instance.CurrentPlayer.DecideAction(planningToMoveUnits, planningToAttackUnits);
+                yield return new WaitUntil(() => GameManager.Player.IsPlaningAction);
+                UnitCommand playerCmd = GameManager.Player.DicideAction();
+                if (playerCmd != null) unitCommands.Add(playerCmd);
+
             }
             else
             {
-                foreach (Unit unit in UnitManager.Instance.Units)
+                foreach(Unit unit in UnitManager.Instance.Units)
                 {
                     if (unit is Enemy enemy)
                     {
-                        enemy.DecideAction(planningToMoveUnits, planningToAttackUnits);
+                        UnitCommand enemyCmd = enemy.DicideAction();
+                        if (enemyCmd != null) unitCommands.Add(enemyCmd);
                     }
                 }
             }
 
-            Debug.Log(planningToMoveUnits.Count + " " + planningToAttackUnits.Count + " " + GameManager.Instance.CurrentPlayer.ActionReservation.ToArray().ToString());
-
-            if (planningToMoveUnits.Count > 0)
+            foreach (UnitCommand command in unitCommands)
             {
-                foreach (Unit unit in planningToMoveUnits)
-                {
-                    _activeMovingUnits.Add(unit);
-                    unit.OnEndAction += OnUnitMoveEnd;
-                    StartCoroutine(unit.MoveCoroutine());
-                }
-                yield return new WaitUntil(() => _activeMovingUnits.Count == 0);
+                yield return command.ExcuteRoutine();
             }
 
-            if (planningToAttackUnits.Count > 0)
-            {
-                foreach (Unit unit in planningToAttackUnits)
-                {
-                    _activeAttackingUnits.Add(unit);
-                    unit.OnEndAction += OnUnitAttackEnd;
-                    StartCoroutine(unit.AttackCoroutine());
-                }
-                yield return new WaitUntil(() => _activeAttackingUnits.Count == 0);
-            }
 
-            yield return new WaitUntil(() => AreAllUnitsIdle());
+            // foreach (Unit unit in UnitManager.Instance.Units)
+            // {
+            //     unit.Status.OnTurnEnd();
+            // } //ここだとプレイヤーとエネミーが行動した後に動作し一ターンで二ターン分の処理が起こる
 
             ChangeTurn();
 
             yield return null;
+
         }
     }
 
-    private bool AreAllUnitsIdle()
+    public void ChangeTurn()
     {
-        foreach (Unit unit in UnitManager.Instance.Units)
-        {
-            if (unit.ActionState != UnitActionState.Idle) return false;
-        }
-        return true;
+        CurrentTurn = (CurrentTurn == Turn.Player) ? Turn.Enemy : Turn.Player;
     }
-
-
-    public void ChangeTurn() 
-    {
-        CurrentTurn = CurrentTurn == Turn.Player ? Turn.Enemy : Turn.Player;
-    }
-
-    private void OnUnitMoveEnd(Unit unit)
-    {
-        unit.OnEndAction -= OnUnitMoveEnd;
-        _activeMovingUnits.Remove(unit);
-    }
-
-    private void OnUnitAttackEnd(Unit unit)
-    {
-        unit.OnEndAction -= OnUnitAttackEnd;
-        _activeAttackingUnits.Remove(unit);
-    }
-
-
-
 }
