@@ -4,15 +4,15 @@ public class Node
 {
     public Vector2Int Pos;
 
-    public int G; //スタートからの距離
-    public int H; //ゴールまでの予測距離
-    public int F => G + H; //合計コスト
+    public float G; //スタートからの距離
+    public float H; //ゴールまでの予測距離
+    public float F => G + H; //合計コスト
 
     public Node parent;
 
     public Node(Vector2Int pos) => Pos = pos;
 
-    public void SetCost(int g, int h)
+    public void SetCost(float g, float h)
     {
         G = g;
         H = h;

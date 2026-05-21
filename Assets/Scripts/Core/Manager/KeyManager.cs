@@ -136,7 +136,7 @@ public class KeyManager : MonoBehaviour
         {
             Player player = GameManager.Player;
             if (player == null) return false;
-            player.unitMovement.AddPath(dir);
+            player.UnitMovement.AddPath(dir);
             return true;
         }
         return false;

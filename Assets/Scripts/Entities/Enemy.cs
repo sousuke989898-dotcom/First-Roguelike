@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Game.UnitSystem.UnitCommand;
 
 public enum EnemyMoveState{Idle, Chase, Escape, Sleep}
 public class Enemy : Unit
@@ -24,11 +25,11 @@ public class Enemy : Unit
         EnemyManager.Instance.RemoveEnemy(this);
     }
 
-    public override bool DecideAction(HashSet<Unit> planningToMoveUnits, HashSet<Unit> planningToAttackUnits)
+    public override UnitCommand DicideAction()
     {
         Vector2Int diff = GetPlayerDiff();
-        unitMovement.AddPath(diff.GetDirection());
-        return base.DecideAction(planningToMoveUnits, planningToAttackUnits);
+        UnitMovement.AddPath(diff.GetDirection());
+        return base.DicideAction();
     }
 
 

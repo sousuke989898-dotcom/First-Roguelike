@@ -4,7 +4,6 @@ using UnityEngine;
 
 public static class PathFinder
 {
-    
 
     public static List<Vector2Int> GetPath(Vector2Int start, Vector2Int end)
     {
@@ -15,7 +14,7 @@ public static class PathFinder
         //List<Node> ClosedList = new();
 
         Node startNode = new(start);
-        startNode.SetCost(0, GetDistance(start, end));
+        startNode.SetCost(0, start.GetDistance(end));
         openList.Add(start,startNode);
 
         while (openList.Count > 0)
@@ -48,7 +47,7 @@ public static class PathFinder
                 if (!MapManager.Instance.MapData.CanMove(pos) || ClosedList.ContainsKey(pos)) continue;
 
 
-                int newG = currentNode.G + 1;
+                float newG = currentNode.G + 1;
                 Node openNode = null;
                 if (openList.ContainsKey(pos)) openNode = openList[pos];
 
@@ -59,7 +58,7 @@ public static class PathFinder
                     {
                         parent = currentNode // ここで親を記録！
                     };
-                    newNode.SetCost(newG, GetDistance(pos, end));
+                    newNode.SetCost(newG, pos.GetDistance(end));
                     openList.Add(pos,newNode);
                 }
                 else if (newG < openNode.G)
@@ -87,26 +86,4 @@ public static class PathFinder
         path.Reverse();
         return path;
     }
-
-    /// <summary>
-    /// チュビシェフ距離を取得する
-    /// </summary>
-    public static int GetDistance(Vector2Int a, Vector2Int b)
-    {
-        int dx = Mathf.Abs(a.x - b.x);
-        int dy = Mathf.Abs(a.y - b.y);
-        return Mathf.Max(dx, dy);
-    }
-
-
-
-    /// <summary>
-    /// 距離を取得する
-    /// </summary>
-    // public static float GetDistance(Vector2Int a, Vector2Int b)
-    // {
-    //     int dx = Mathf.Abs(a.x - b.x);
-    //     int dy = Mathf.Abs(a.y - b.y);
-    //     return Mathf.Sqrt((dx * dx + dy * dy));
-    // }
 }

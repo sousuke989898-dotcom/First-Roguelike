@@ -26,16 +26,12 @@ public class Unit : Entity, IHasStatus
     // AbsPos
     public List<Vector2Int> ActionReservation {get; private set;} = new();
 
-    public Vector2Int ActionDir {get; private set;} //(±1,±1)
-
-    public event Action<Unit> OnStartAction;
     public event Action<Unit> OnDead;
 
     private UnitAnim unitAnim;
+    public UnitMovement UnitMovement {get; protected set;}
 
-    public UnitMovement unitMovement {get; protected set;}
-
-    public bool IsPlaningAction => unitMovement.ActionReservation.Count > 0; //todo 名前の
+    public bool IsPlaningAction => UnitMovement.ActionReservation.Count > 0; //todo 名前の
 
 
 
@@ -51,7 +47,7 @@ public class Unit : Entity, IHasStatus
         Status = new(data.DefaultMaxHP, data.DefaultAtk, data.DefaultDef);
         ActionState = UnitActionState.Idle;
         unitAnim = new UnitAnim(transform, spriteRenderer);
-        unitMovement = new(this);
+        UnitMovement = new(this);
         UnitManager.Instance.AddUnit(this);
     }
 
@@ -59,36 +55,11 @@ public class Unit : Entity, IHasStatus
 
 //-------基本動作-------
 
-
-    public virtual bool DecideAction(HashSet<Unit> planningToMoveUnits, HashSet<Unit> planningToAttackUnits)
-    {
-        if (ActionState != UnitActionState.Idle) return false;
-        if (ActionReservation.Count == 0) return false;
-
-        var targetPos = ActionReservation[0];
-        ActionReservation.RemoveAt(0);
-
-        ActionDir = targetPos - Pos;
-        HashSet<Entity> entities = MapManager.Instance.MapData.GetEntities(targetPos);
-        IHasStatus target = entities.GetHasStatus();
-
-
-        if (target != null && targetPos != Pos /*自分自身は除外*/) //攻撃
-        {
-            planningToAttackUnits.Add(this);
-        }
-        else //移動
-        {
-            planningToMoveUnits.Add(this);
-        }
-        return true;
-    }
-
     public virtual UnitCommand DicideAction()
     {
-        if (ActionState != UnitActionState.Idle || !unitMovement.PlanningAction) return null;
+        if (ActionState != UnitActionState.Idle || !UnitMovement.PlanningAction) return null;
         
-        Vector2Int targetPos = unitMovement.GetNextPos();
+        Vector2Int targetPos = UnitMovement.GetNextPos();
         
         HashSet<Entity> entities = MapManager.Instance.MapData.GetEntities(targetPos);
         Unit target = entities.GetUnit();
@@ -118,7 +89,7 @@ public class Unit : Entity, IHasStatus
         }
         else
         {
-            //移動処理に移行？
+            //todo ターン処理中に対象が死んだということなので移動処理に移行？
         }
     }
 
