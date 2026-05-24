@@ -1,9 +1,8 @@
 using UnityEngine;
-using Cinemachine; // ★これを忘れずにインポート！
+using Cinemachine;
 
 public class CameraZoomController : MonoBehaviour
 {
-    // インスペクターからCinemachineのVirtual Cameraをセットする
     [SerializeField] private CinemachineVirtualCamera virtualCamera;
 
     [SerializeField] private float minSize = 3f;  // 最大ズームイン時のサイズ

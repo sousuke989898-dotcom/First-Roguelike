@@ -5,10 +5,8 @@ using Cinemachine;
 public class CameraAndInputController : MonoBehaviour
 {
     [SerializeField] private CinemachineVirtualCamera virtualCamera;
-    [SerializeField] private Tilemap walkStyleTilemap;
-    [SerializeField] private float dragSpeed = 0.5f;
-    
-    // 単押しとドラッグを区別するための設定
+    [SerializeField] private Tilemap walkStyleTilemap;  
+
     [SerializeField] private float clickThresholdDistance = 10f; // このピクセル分マウスが動いたらドラッグとみなす
 
     private Vector3 _touchStartMousePos;
@@ -21,7 +19,7 @@ public class CameraAndInputController : MonoBehaviour
         if (virtualCamera != null)
         {
             virtualCamera.Follow = transform;
-            virtualCamera.LookAt = transform;
+            //virtualCamera.LookAt = transform;
         }
     }
 
@@ -48,10 +46,7 @@ public class CameraAndInputController : MonoBehaviour
 
             if (_isDraggingMode)
             {
-                Vector3 difference = _lastMousePos - Input.mousePosition;
-                Vector3 move = dragSpeed * Time.deltaTime * new Vector3(difference.x, difference.y, 0);
-                transform.position += move;
-                _lastMousePos = Input.mousePosition;
+                DraggingCamera();
             }
         }
 
@@ -85,6 +80,24 @@ public class CameraAndInputController : MonoBehaviour
         _isFollowingPlayer = true;
 
         GameManager.Player.UnitMovement.SetPath(targetGridPos);
+    }
+
+    /// <summary>
+    /// カーソルの移動量に合わせてカメラを移動させる
+    /// </summary>
+    private void DraggingCamera()
+    {
+        float worldSizePerPixel = Camera.main.orthographicSize * 2f / Screen.height;
+        Vector3 difference = _lastMousePos - Input.mousePosition;
+        Vector3 move = new Vector3(difference.x, difference.y, 0) * worldSizePerPixel;
+
+        transform.position += move;
+        _lastMousePos = Input.mousePosition;
+
+        // Vector3 difference = _lastMousePos - Input.mousePosition;
+        // Vector3 move = dragSpeed * Time.deltaTime * new Vector3(difference.x, difference.y, 0);
+        // transform.position += move;
+        // _lastMousePos = Input.mousePosition;
     }
 
     public void ResetCameraToPlayer()
