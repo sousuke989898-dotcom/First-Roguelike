@@ -40,12 +40,14 @@ public class UnitManager : MonoBehaviour //削除予定
     {
         if (unit == null) return false;
         SetSlider(unit);
+        unit.OnDead += u =>  RemoveUnit(u);
         return Units.Add(unit);
     }
 
     public bool RemoveUnit(Unit unit)
     {
         if (unit == null) return false;
+        unit.OnDead -= u => RemoveUnit(u);
         return Units.Remove(unit);
     }
 

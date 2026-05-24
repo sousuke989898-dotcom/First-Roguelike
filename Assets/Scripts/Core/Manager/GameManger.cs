@@ -4,6 +4,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private Player PlayerPrefab;
+    [SerializeField] private Cinemachine.CinemachineVirtualCamera VirtualCamera;
 
     public static GameManager Instance {get; private set;}
 
@@ -29,10 +30,11 @@ public class GameManager : MonoBehaviour
     {
         UnitData data = DatabaseManager.Units.Get("Player");
         Player.InitUnit(data,MapManager.Instance.GetSpawnPos());
+
         EnemyManager.Instance.SpawnEnemy();
 
         TurnManager.Instance.StartCoroutine(TurnManager.Instance.StartRoutine());
-
+        
         // Vector2Int start = MapManager.Instance.GetSpawnPos();
         // Vector2Int end = MapManager.Instance.GetSpawnPos();
         // var path = PathFinder.GetPath(start, end);

@@ -1,9 +1,10 @@
 using System.Collections.Generic;
-using System.Collections;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class KeyManager : MonoBehaviour
 {
+    [SerializeField] private Tilemap walkStyleTilemap;
 
     private float inputBufferTimer = 0f;
     public const float combinationWindow = 0.04f; 
@@ -61,27 +62,7 @@ public class KeyManager : MonoBehaviour
         {
             ExecuteCommand(command);
         }
-
-        return;
     }
-
-    // public IEnumerator StartRoutine() // 処理が遅くなってしまったので、Updateに戻す
-    // {
-    //     while (true)
-    //     {
-    //         yield return new WaitUntil(() => lastCombo.GetStatus() == ComboStatus.None);
-    //         lastCombo = KeyCombo.None;
-
-    //         inputBufferTimer -= Time.deltaTime;
-    //         InputCommand command = GetCommand();
-    //         if (command != InputCommand.None)
-    //         {
-    //             ExecuteCommand(command);
-    //         }
-
-    //         yield return null;
-    //     }
-    // }
 
     private InputCommand GetCommand()
     {

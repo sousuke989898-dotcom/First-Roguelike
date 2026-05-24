@@ -11,7 +11,6 @@ public static class PathFinder
 
         Dictionary<Vector2Int, Node> openList = new();
         Dictionary<Vector2Int, Node> ClosedList = new();
-        //List<Node> ClosedList = new();
 
         Node startNode = new(start);
         startNode.SetCost(0, Vector2IntExtensions.GetDistance(start,end));
