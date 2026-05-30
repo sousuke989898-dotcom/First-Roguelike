@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.GridMap;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -19,6 +20,10 @@ public class MapManager : MonoBehaviour
 
     [SerializeField] private int MaxRoomCount;
     [SerializeField] private int minSize;
+
+    public DungeonLevel CurrentLevel {get; private set;}
+    // public int SizeX => CurrentLevel.Terrain.Width;
+    // public int SizeY => CurrentLevel.Terrain.Height;
 
 
     public MapData MapData {get; private set;}
@@ -91,4 +96,37 @@ public class MapManager : MonoBehaviour
         List<Vector2Int> positions = MapData.GetCanSpawnPositions();
         return positions[Random.Range(0, positions.Count - 1)];
     }
+
+    // public Vector2Int GetSpawnPos()
+    // {
+    //     // スポーン可能座標の取得ロジック
+    //     List<Vector2Int> emptyPositions = new();
+
+    //     for (int x = 0; x < SizeX; x++)
+    //     {
+    //         for (int y = 0; y < SizeY; y++)
+    //         {
+    //             Vector2Int pos = new(x, y);
+    //             // 地形がスポーン可能（床）かつ、Entityが何も居ない場所
+    //             if (CurrentLevel.Terrain.GetTileType(pos) == TileType.Floor && 
+    //                 CurrentLevel.Holder.GetEntities(pos).Count == 0)
+    //             {
+    //                 emptyPositions.Add(pos);
+    //             }
+    //         }
+    //     }
+
+    //     if (emptyPositions.Count == 0) return Vector2Int.zero;
+    //     return emptyPositions[Random.Range(0, emptyPositions.Count)];
+    // }
+
+    // public void InitializeMap(int sizeX, int sizeY, int maxRoomCount, int minSize)
+    // {
+    //     TileType[,] terrain = MapGenerator.GenerateMap(sizeX, sizeY, maxRoomCount, minSize);
+        
+    //     List<Section> sections = new List<Section>(); 
+
+    //     // 3. 統括クラスの生成
+    //     CurrentLevel = new DungeonLevel(terrain, sections);
+    // }
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Cinemachine;
+using System.Diagnostics;
 
 public class CameraAndInputController : MonoBehaviour
 {
@@ -71,6 +72,10 @@ public class CameraAndInputController : MonoBehaviour
 
     private void TriggerAutoMove(Vector3 screenPosition)
     {
+        Stopwatch sw = new Stopwatch();
+        sw.Start(); // 計測開始
+
+
         if (walkStyleTilemap == null || GameManager.Player == null) return;
 
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPosition);
@@ -80,6 +85,12 @@ public class CameraAndInputController : MonoBehaviour
         _isFollowingPlayer = true;
 
         GameManager.Player.UnitMovement.SetPath(targetGridPos);
+
+
+        sw.Stop(); // 計測終了
+
+        UnityEngine.Debug.Log($"処理時間: {sw.ElapsedMilliseconds} ms");
+        UnityEngine.Debug.Log($"処理時間(詳細): {sw.ElapsedTicks} ticks");
     }
 
     /// <summary>
@@ -103,6 +114,6 @@ public class CameraAndInputController : MonoBehaviour
     public void ResetCameraToPlayer()
     {
         _isFollowingPlayer = true;
-        Debug.Log("カメラをプレイヤーに戻しました。");
+        UnityEngine.Debug.Log("カメラをプレイヤーに戻しました。");
     }
 }
