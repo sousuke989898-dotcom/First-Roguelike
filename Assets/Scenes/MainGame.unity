@@ -789,9 +789,9 @@ MonoBehaviour:
   FloorPrefab: {fileID: 11400000, guid: ec7dbe0bf22704776934cebf015a603b, type: 2}
   WallHighLightPrefab: {fileID: 0}
   FloorHighLightPrefab: {fileID: 0}
-  InitSizeX: 50
-  InitSizeY: 50
-  MaxRoomCount: 10
+  InitSizeX: 1000
+  InitSizeY: 1000
+  MaxRoomCount: 50
   minSize: 8
 --- !u!114 &642665090
 MonoBehaviour:
