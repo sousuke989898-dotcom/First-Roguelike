@@ -30,13 +30,16 @@ namespace Game.GridMap
                 for (int y = 0; y < h; y++)
                 {
                     Color color = texture.GetPixel(x, y);
-                    Terrain[x,y] = ColorToTile(color);
+                    TileType currentTileType = ColorToTile(color);
+                    Terrain[x,y] = currentTileType;
 
                     Vector2Int localPos = new(x, y);
-                    TilePoint point = GetTilePoint(Terrain[x,y], localPos);
-                    if (point != null)
+
+                    if (currentTileType == TileType.UpStairs || 
+                        currentTileType == TileType.DownStairs || 
+                        currentTileType == TileType.Door)
                     {
-                        SpecialTiles.Add(point);
+                        SpecialTiles.Add(new TilePoint(currentTileType, localPos));
                     }
 
                 }
@@ -45,38 +48,28 @@ namespace Game.GridMap
 
         private TileType ColorToTile(Color color)
         {
-            foreach (var mapping in _roomData.ColorMappings)
+            if (_roomData.Palette == null) return TileType.Floor;
+
+            foreach (var mapping in _roomData.Palette.Mappings)
             {
                 if (Mathf.Approximately(mapping.color.r, color.r) &&
                     Mathf.Approximately(mapping.color.g, color.g) &&
                     Mathf.Approximately(mapping.color.b, color.b))
                 {
-                    return mapping.tileType; 
+                    return mapping.tileType;
                 }
             }
 
-            return TileType.Floor;
+            return TileType.Floor; 
         }
 
-        private TilePoint GetTilePoint(TileType type, Vector2Int pos)
-        {
-            switch (type)
-            {
-                case TileType.UpStairs:
-                case TileType.DownStairs:
-                case TileType.Door:
-                    return new TilePoint(type, pos);
-                default :
-                    return null;
-            };
-        }
 
     }
 
     /// <summary>
     /// 特殊なタイルの位置を保持するクラス
     /// </summary>
-    public class TilePoint
+    public struct TilePoint
     {
         public TileType type; //タイル情報
         public Vector2Int localPos; //位置情報

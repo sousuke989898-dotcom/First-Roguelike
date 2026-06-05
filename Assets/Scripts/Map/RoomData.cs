@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.GridMap
@@ -9,7 +8,7 @@ namespace Game.GridMap
         [SerializeField] private Texture2D _roomTexture;
         public Texture2D RoomTexture => _roomTexture;
 
-        [SerializeField] private List<ColorMapping> _colorMappings;
-        public List<ColorMapping> ColorMappings => _colorMappings;
+        [SerializeField] private MasterColorPalette _palette;
+        public MasterColorPalette Palette => _palette;
     }
 }
