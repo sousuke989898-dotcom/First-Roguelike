@@ -1,5 +1,16 @@
 
-public enum TileType{Wall, Floor, UpStairs, DownStairs, Door, Road, None}
+public enum TileType
+{
+    None,
+    Wall,
+    Floor,
+    Road,
+
+    Stairs_Up,
+    Stairs_Down,
+    Door_Closed,
+    Door_Opend,
+}
 
 public static class TileTypeExtensions
 {

@@ -22,6 +22,8 @@ public class Entity : MonoBehaviour
 
     public event Action<Entity> OnDisposeEntity;
 
+    public virtual bool IsBlocking => Data != null && Data.isBlockingDefault;
+
 
     public virtual void InitEntity(EntityData data, Vector2Int pos)
     {
@@ -90,5 +92,6 @@ public class Entity : MonoBehaviour
         OnEndMove = null;
     }
 
+    public virtual void OnStepped(Unit unit){}
 
 }
