@@ -18,7 +18,7 @@ public class MapManager : MonoBehaviour
     // public int SizeX => CurrentLevel.Terrain.Width;
     // public int SizeY => CurrentLevel.Terrain.Height;
 
-    public RoomRegistry _roomRegistry { get; private set; }
+    // public RoomRegistry _roomRegistry { get; private set; }
 
     public int SizeX => CurrentLevel.Terrain.Matrix.GetLength(0);
     public int SizeY => CurrentLevel.Terrain.Matrix.GetLength(1);
@@ -37,13 +37,13 @@ public class MapManager : MonoBehaviour
             return;
         }
 
-        if (dungeonSettings == null || dungeonSettings.roomDataset == null || dungeonSettings.tileMapping == null)
-        {
-            Debug.LogError("DungeonSettings、または内部のアセットがセットされていません。");
-            return;
-        }
+        // if (dungeonSettings == null || dungeonSettings.roomDataset == null || dungeonSettings.tileMapping == null)
+        // {
+        //     Debug.LogError("DungeonSettings、または内部のアセットがセットされていません。");
+        //     return;
+        // }
 
-        _roomRegistry = new RoomRegistry(dungeonSettings.roomDataset, dungeonSettings.tileMapping);
+        // _roomRegistry = new RoomRegistry(dungeonSettings.roomDataset, dungeonSettings.tileMapping);
 
         InitializeMap();
     }
@@ -82,18 +82,18 @@ public class MapManager : MonoBehaviour
         {
             for (int y = 0; y < SizeY; y++)
             {
-                TileType type = CurrentLevel.GetTileType(new(x,y));
+                // TileType type = CurrentLevel.GetTileType(new(x,y));
                 
-                TileBase tile = dungeonSettings.tileMapping.GetTileBase(type);
+                // TileBase tile = dungeonSettings.tileMapping.GetTileBase(type);
 
-                    // ※ドア（Door_Closedなど）は、見た目上「床」として描画したい場合はここで補正
-                    if (type == TileType.Door_Closed)
-                    {
-                        tile = dungeonSettings.tileMapping.GetTileBase(TileType.Floor);
-                    }
+                //     // ※ドア（Door_Closedなど）は、見た目上「床」として描画したい場合はここで補正
+                //     if (type == TileType.Door_Closed)
+                //     {
+                //         tile = dungeonSettings.tileMapping.GetTileBase(TileType.Floor);
+                //     }
 
-                    Vector3Int position = new(x, y, 0);
-                    tilemap.SetTile(position, tile);
+                //     Vector3Int position = new(x, y, 0);
+                //     tilemap.SetTile(position, tile);
             }
         }
     }

@@ -19,5 +19,4 @@ public class DungeonSettings : ScriptableObject
 
     [Header("部屋の設定")]
     public RoomDataset roomDataset;
-    public TileMapping tileMapping;
 }

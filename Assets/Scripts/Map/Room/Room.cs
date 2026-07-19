@@ -18,7 +18,7 @@ namespace Game.GridMap
         // 1辺1ドア管理用の辞書も併用
         public Dictionary<Direction, Vector2Int> Doors { get; private set; } 
 
-        public static Room CreateFromData(RoomData data, TileMapping tileMapping)
+        public static Room CreateFromData(RoomData data)
         {
             Room room = new()
             {
@@ -36,23 +36,23 @@ namespace Game.GridMap
             {
                 for (int y = 0; y < data.size.y; y++)
                 {
-                    TileBase terrainTile = terrainMap.GetTile(new Vector3Int(x, y, 0));
-                    room.TerrainLayer[x, y] = tileMapping.GetTileType(terrainTile);
+                    // TileBase terrainTile = terrainMap.GetTile(new Vector3Int(x, y, 0));
+                    // room.TerrainLayer[x, y] = tileMapping.GetTileType(terrainTile);
 
-                    TileBase entityTile = entityMap.GetTile(new Vector3Int(x, y, 0));
-                    TileType entityType = tileMapping.GetTileType(entityTile);
-                    room.EntityLayer[x, y] = entityType;
+                    // TileBase entityTile = entityMap.GetTile(new Vector3Int(x, y, 0));
+                    // TileType entityType = tileMapping.GetTileType(entityTile);
+                    // room.EntityLayer[x, y] = entityType;
 
-                    // ドアの位置と向きを辞書に登録
-                    if (entityType == TileType.Door_Closed)
-                    {
-                        Vector2Int localPos = new(x, y);
-                        Direction dir = ConvertPositionToDirection(localPos, data.size);
-                        if (!room.Doors.ContainsKey(dir))
-                        {
-                            room.Doors.Add(dir, localPos);
-                        }
-                    }
+                    // // ドアの位置と向きを辞書に登録
+                    // if (entityType == TileType.Door_Closed)
+                    // {
+                    //     Vector2Int localPos = new(x, y);
+                    //     Direction dir = ConvertPositionToDirection(localPos, data.size);
+                    //     if (!room.Doors.ContainsKey(dir))
+                    //     {
+                    //         room.Doors.Add(dir, localPos);
+                    //     }
+                    // }
                 }
             }
             return room;
