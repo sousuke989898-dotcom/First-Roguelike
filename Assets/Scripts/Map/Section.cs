@@ -18,7 +18,6 @@ namespace Game.GridMap
         public int Size => Width * Height;
         public Vector2Int SectionCenter => new(X + (Width/2), Y + (Height/2));
 
-        public Room Room {get; private set;}
         public RectInt RoomRect {get; private set;}
 
 
@@ -30,15 +29,6 @@ namespace Game.GridMap
         public Section(int x, int y, int w, int h)
         {
             SectionRect = new RectInt(x,y,w,h);
-        }
-
-        public void SetRoom(Room room, RectInt roomRect)
-        {
-            if (!IsContained (SectionRect, roomRect)) return;
-
-            Room = room;
-            RoomRect = roomRect;
-
         }
 
         bool IsContained(RectInt rectA, RectInt rectB) //本当はここじゃない方がいい？

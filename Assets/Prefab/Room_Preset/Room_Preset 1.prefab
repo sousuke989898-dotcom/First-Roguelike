@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3858797976031067288}
   - component: {fileID: 5130241307099846309}
   m_Layer: 0
-  m_Name: Tilemap_Entities
+  m_Name: Gimmick
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -211,7 +211,7 @@ GameObject:
   - component: {fileID: 6663530525090618378}
   - component: {fileID: 2341382541138534647}
   m_Layer: 0
-  m_Name: Tilemap_Terrain
+  m_Name: Terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -48,6 +48,5 @@ public class EnemyManager : MonoBehaviour
     /// </summary>
     public void SpawnEnemy()
     {
-        SpawnEnemy(MapManager.Instance.GetSpawnPos());
     }
 }

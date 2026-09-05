@@ -14,9 +14,14 @@ public class DungeonSettings : ScriptableObject
     public int minSectionSize = 6;
     public bool useOverlap = false;
 
+    public int maxDepth = 4;
+
     [Header("分割位置の制限")]
     [Range(0.1f, 0.45f)] public float partingMargin = 0.4f;
 
     [Header("部屋の設定")]
-    public RoomDataset roomDataset;
+    public RoomDatabase roomDatabase;
+
+    [Header("各種データ")]
+    public MapDatabase mapDatabase;
 }

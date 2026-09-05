@@ -12,9 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f41e826787e740fbaea7a5062ded5c2, type: 3}
   m_Name: Dungeon Settings
   m_EditorClassIdentifier: Assembly-CSharp::DungeonSettings
-  mapSizeX: 60
-  mapSizeY: 40
-  roomCount: 6
+  mapSizeX: 50
+  mapSizeY: 50
+  roomCount: 8
   minSectionSize: 8
-  useOverlap: 1
-  partingMargin: 0.4
+  useOverlap: 0
+  maxDepth: 4
+  partingMargin: 0.149
+  roomDatabase: {fileID: 11400000, guid: a96c1a68ea3be4eb6b1ff408acb7ffc3, type: 2}
+  mapDatabase: {fileID: 11400000, guid: 17ad8016de96247f5a033c17edbf7a7e, type: 2}

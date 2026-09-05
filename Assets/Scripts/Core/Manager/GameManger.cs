@@ -29,11 +29,10 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         UnitData data = DatabaseManager.Units.Get("Player");
-        Player.InitUnit(data,MapManager.Instance.GetSpawnPos());
 
         EnemyManager.Instance.SpawnEnemy();
 
-        TurnManager.Instance.StartCoroutine(TurnManager.Instance.StartRoutine());
+        //TurnManager.Instance.StartCoroutine(TurnManager.Instance.StartRoutine());
         
         // Vector2Int start = MapManager.Instance.GetSpawnPos();
         // Vector2Int end = MapManager.Instance.GetSpawnPos();

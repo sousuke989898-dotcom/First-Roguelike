@@ -5,7 +5,7 @@ namespace Game.GridMap
     [CreateAssetMenu(fileName = "NewRoomData", menuName = "Dungeon/Room Data")]
     public class RoomData : ScriptableObject
     {
-        [Header("部屋のPrefab (Tilemapを含む)")]
+        [Header("部屋のPrefab")]
         public GameObject roomPrefab;
 
         [Header("この部屋のカテゴリ")]
