@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5165dbf9c79ea410e91a8d6adf5c2f47, type: 3}
+  m_Name: MapDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::Game.GridMap.MapDatabase
+  wallData: {fileID: 11400000, guid: 0e936e0053c4046d5a956ef8277c33a2, type: 2}
+  floorData: {fileID: 11400000, guid: ca6a5bac588154cc1b30cceda03464ed, type: 2}
+  roadData: {fileID: 11400000, guid: da1b01b5580a84bf0b2024a1d5a2cb30, type: 2}
+  DoorCloosedData: {fileID: 11400000, guid: 2b39217bff2cd4162bc6030c75305812, type: 2}
+  allObjects:
+  - {fileID: 11400000, guid: 0e936e0053c4046d5a956ef8277c33a2, type: 2}
+  - {fileID: 11400000, guid: ca6a5bac588154cc1b30cceda03464ed, type: 2}
+  - {fileID: 11400000, guid: da1b01b5580a84bf0b2024a1d5a2cb30, type: 2}
+  - {fileID: 11400000, guid: 2b39217bff2cd4162bc6030c75305812, type: 2}
+  - {fileID: 11400000, guid: c6972c97f26d043f59b2850d10b8173a, type: 2}

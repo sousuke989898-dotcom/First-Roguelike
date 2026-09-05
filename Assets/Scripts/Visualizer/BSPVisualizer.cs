@@ -1,68 +1,81 @@
-using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
 using Game.GridMap;
+#endif
 
 public class BspVisualizer : MonoBehaviour
 {
-    // ★Singleton（どこからでも1行でアクセスできるようにする仕組み）
     public static BspVisualizer Instance { get; private set; }
 
-    [Header("デバッグ表示切り替え")]
-    [SerializeField] private DungeonSettings _settings;
-    [SerializeField] private bool _showDebugGizmos = false;
+    [Header("表示トグル")]
+    [SerializeField] private bool showSections = true;
+    [SerializeField] private bool showRooms = true;
+    [SerializeField] private bool showDoors = true;
+    [SerializeField] private bool showTreeConnections = true;
 
-    private List<Section> _activeSections = new();
+    private SectionNode rootNode;
 
-    private void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else
-        {
-            enabled = false;
-            Debug.LogError($"{this}が複数存在しています。");
-        }
-    }
+    private void Awake() => Instance = this;
 
-    [ContextMenu("BSP生成を実行")]
-    public void RunBsp()
-    {
-        if (_settings == null)
-        {
-            Debug.LogError("DungeonSettingsがセットされていません!");
-            return;
-        }
-        // 設定ファイルを渡して実行
-        _activeSections = MapGenerator.DebugGenerateSections(_settings);
-    }
+    public void RegisterRootNode(SectionNode node) => rootNode = node;
 
-    /// <summary>
-    /// マップ生成器から、実際に使われたSectionのリストを受け取って記憶する
-    /// </summary>
-    public void RegisterSections(List<Section> sections)
-    {
-        _activeSections = new List<Section>(sections);
-    }
-
-    // Unityが画面を描画するときに自動で呼ばれる
     private void OnDrawGizmos()
     {
-        // ★チェックボックスがオフ、またはデータがなければ何も描画しない（完全不可視）
-        if (!_showDebugGizmos || _activeSections == null || _activeSections.Count == 0) return;
+        if (rootNode == null) return;
+        DrawNodeGizmos(rootNode, 0);
+    }
 
-        foreach (var section in _activeSections)
+    private void DrawNodeGizmos(SectionNode node, int depth)
+    {
+        if (node == null) return;
+
+        if (showSections)
         {
-            float r = Mathf.Abs(Mathf.Sin(section.X * 12.9898f + section.Y * 78.233f)) % 1.0f;
-            float g = Mathf.Abs(Mathf.Sin(section.X * 45.164f + section.Y * 98.143f)) % 1.0f;
-            float b = Mathf.Abs(Mathf.Sin(section.X * 87.421f + section.Y * 12.547f)) % 1.0f;
-            
-            Gizmos.color = new Color(r, g, b, 0.3f);
-            
-            Vector3 center = new Vector3(section.X + section.Width / 2f, section.Y + section.Height / 2f, 0);
-            Vector3 size = new Vector3(section.Width, section.Height, 0.1f);
+            // --- 深さに応じた青色の計算 ---
+            // 深さ 0（全体）は薄い水色、深さが増すにつれて濃い紺色に変化
+            float maxExpectedDepth = 6f; // 濃さの変化基準となる最大深さ
+            float t = Mathf.Clamp01(depth / maxExpectedDepth);
+
+            Color lightBlue = new Color(0.5f, 0.8f, 1.0f); // 浅い階層の色（明るい水色）
+            Color darkBlue  = new Color(0.02f, 0.1f, 0.45f); // 深い階層の色（濃い紺色）
+            Color baseColor = Color.Lerp(lightBlue, darkBlue, t);
+
+            Vector3 center = new Vector3(node.area.x + node.area.width / 2f, node.area.y + node.area.height / 2f, 0);
+            Vector3 size = new Vector3(node.area.width, node.area.height, 0.01f);
+
+            // 1. 面の描画（半透明の青）
+            Gizmos.color = new Color(baseColor.r, baseColor.g, baseColor.b, 0.2f);
             Gizmos.DrawCube(center, size);
 
-            Gizmos.color = Color.white;
+            // 2. 枠線の描画（濃い青で境界線をくっきり表示）
+            Gizmos.color = new Color(baseColor.r, baseColor.g, baseColor.b, 0.9f);
             Gizmos.DrawWireCube(center, size);
         }
+
+        // 部屋（Room）の面描画（区別しやすいよう緑色で重ねる）
+        if (showRooms && node.IsLeaf && node.roomRect.width > 0)
+        {
+            Vector3 rCenter = new Vector3(node.roomRect.x + node.roomRect.width / 2f, node.roomRect.y + node.roomRect.height / 2f, -0.01f);
+            Vector3 rSize = new Vector3(node.roomRect.width, node.roomRect.height, 0.01f);
+
+            Gizmos.color = new Color(0f, 1f, 0.4f, 0.2f);
+            Gizmos.DrawCube(rCenter, rSize);
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireCube(rCenter, rSize);
+        }
+
+        // ドアの描画
+        if (showDoors && node.IsLeaf)
+        {
+            Gizmos.color = Color.red;
+            foreach (var door in node.doorPositions.Values)
+            {
+                Gizmos.DrawSphere(new Vector3(door.x + 0.5f, door.y + 0.5f, -0.02f), 0.2f);
+            }
+        }
+
+        DrawNodeGizmos(node.left, depth + 1);
+        DrawNodeGizmos(node.right, depth + 1);
     }
 }

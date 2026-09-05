@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fca336a9b389b4f05b7a5e00bb598246, type: 3}
   m_Name: RoomB
   m_EditorClassIdentifier: Assembly-CSharp::Game.GridMap.RoomData
-  roomPrefab: {fileID: 7504383179122480052, guid: 62de7df7f6b8b401e8ea6c13ce75a89d, type: 3}
+  roomPrefab: {fileID: 7504383179122480052, guid: a86e942fa908f43de8c83924a43c8c27, type: 3}
   category: 0
-  size: {x: 5, y: 5}
+  size: {x: 7, y: 7}
