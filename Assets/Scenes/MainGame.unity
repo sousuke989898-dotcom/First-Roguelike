@@ -1221,15 +1221,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba961069857f243e3bc6efecdd810d75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.GridMap.DoorTile
-  <Data>k__BackingField: {fileID: 0}
-  <Pos>k__BackingField: {x: 0, y: 0}
-  <OldPos>k__BackingField: {x: 0, y: 0}
-  initialState: 1
-  openSprite: {fileID: -1348563255040795877, guid: f166c1a75962548dc9bc9db8f9aa5fed, type: 3}
-  closedSprite: {fileID: 4368993586877031778, guid: f166c1a75962548dc9bc9db8f9aa5fed, type: 3}
-  lockedSprite: {fileID: 8775325280813509963, guid: f166c1a75962548dc9bc9db8f9aa5fed, type: 3}
-  currentState: 0
-  _spriteRenderer: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
