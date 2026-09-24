@@ -21,8 +21,8 @@ Unity上で動作する、BSP（二分空間分割）アルゴリズムを用い
 - **面積優先分割ループ**
   最も面積の大きい領域を優先して分割し、分割後の領域を分割前の領域の葉として保持させる木構造を採用。
   * **背景**: 元来は単純なリスト構造でデータを管理していたが、BSP本来の階層構造や空間の包含関係を活かせていないことを知り、木構造へリファクタリングを行った。
-
-<img width="200" height="200" alt="BSPのデモ動画" src="https://github.com/user-attachments/assets/727e84a6-7504-4c4a-bdc1-9e66f119be13" />
+ 
+<img width="200" height="200" alt="bannerkoubou-gif-20260924-182540" src="https://github.com/user-attachments/assets/ef47d9f3-fbde-43d3-a69e-ae6f24e1765e" />
 
   後述の視覚化ツールを使用したBSPの動作の様子
 
